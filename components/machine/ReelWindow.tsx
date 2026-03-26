@@ -38,7 +38,6 @@ export default function ReelWindow({
     prevStatusRef.current = status;
 
     if (status === "spinning" && prevStatus !== "spinning") {
-      // Starting a new spin
       clearTimers();
       stoppedCountRef.current = 0;
       hasCalledStoppedRef.current = false;
@@ -55,13 +54,11 @@ export default function ReelWindow({
       );
       timersRef.current = timers;
     } else if (status === "idle" && prevStatus !== "idle") {
-      // Resetting
       clearTimers();
       stoppedCountRef.current = 0;
       hasCalledStoppedRef.current = false;
       setReelStatuses(["idle", "idle", "idle"]);
     }
-    // "winner" status: don't change anything, reels stay in their stopped state
   }, [status, clearTimers]);
 
   const handleReelStopped = useCallback(
@@ -83,40 +80,66 @@ export default function ReelWindow({
 
   const windowHeight = VISIBLE_ROWS * ROW_HEIGHT;
 
+  // Reel columns shared between both modes
+  const reelColumns = (
+    <>
+      {[0, 1, 2].map((reelIndex) => (
+        <div
+          key={reelIndex}
+          className="flex-1 relative"
+          style={{
+            borderRight:
+              reelIndex < 2
+                ? "2px solid var(--reel-divider, rgba(255,255,255,0.15))"
+                : "none",
+          }}
+        >
+          <SlotReelColumn
+            names={names}
+            winnerName={winnerName}
+            reelIndex={reelIndex}
+            status={reelStatuses[reelIndex]}
+            onStopped={() => handleReelStopped(reelIndex)}
+          />
+        </div>
+      ))}
+    </>
+  );
+
+  if (fillContainer) {
+    // Image frame mode: fill the container, center the reel content vertically
+    return (
+      <div className="relative h-full w-full overflow-hidden">
+        {/* Center the fixed-height reel content within the container */}
+        <div
+          className="absolute left-0 right-0 flex"
+          style={{
+            height: windowHeight,
+            top: "50%",
+            transform: "translateY(-50%)",
+          }}
+        >
+          {reelColumns}
+        </div>
+      </div>
+    );
+  }
+
+  // CSS frame mode: fixed height with decorative elements
   return (
-    <div className={`relative ${fillContainer ? "h-full" : ""}`}>
+    <div className="relative">
       <div
-        className={`machine-reel-bg relative overflow-hidden ${fillContainer ? "h-full" : "rounded-lg"}`}
+        className="machine-reel-bg relative rounded-lg overflow-hidden"
         style={{
-          ...(!fillContainer ? { height: windowHeight } : {}),
-          boxShadow: fillContainer ? "none" : "inset 0 4px 12px rgba(0,0,0,0.6), inset 0 -4px 12px rgba(0,0,0,0.4)",
+          height: windowHeight,
+          boxShadow: "inset 0 4px 12px rgba(0,0,0,0.6), inset 0 -4px 12px rgba(0,0,0,0.4)",
         }}
       >
-        {/* Three reel columns */}
         <div className="flex h-full">
-          {[0, 1, 2].map((reelIndex) => (
-            <div
-              key={reelIndex}
-              className="flex-1 relative"
-              style={{
-                borderRight:
-                  reelIndex < 2
-                    ? "2px solid var(--reel-divider, rgba(255,255,255,0.1))"
-                    : "none",
-              }}
-            >
-              <SlotReelColumn
-                names={names}
-                winnerName={winnerName}
-                reelIndex={reelIndex}
-                status={reelStatuses[reelIndex]}
-                onStopped={() => handleReelStopped(reelIndex)}
-              />
-            </div>
-          ))}
+          {reelColumns}
         </div>
 
-        {/* Glass reflection overlay */}
+        {/* Glass reflection */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -125,12 +148,11 @@ export default function ReelWindow({
           }}
         />
 
-        {/* Winner payline arrows */}
+        {/* Payline arrows */}
         <div
           className="absolute left-0 top-1/2 -translate-y-1/2 z-20 pointer-events-none"
           style={{
-            width: 0,
-            height: 0,
+            width: 0, height: 0,
             borderTop: "10px solid transparent",
             borderBottom: "10px solid transparent",
             borderLeft: "14px solid var(--reel-winner-line, var(--skin-accent))",
@@ -141,8 +163,7 @@ export default function ReelWindow({
         <div
           className="absolute right-0 top-1/2 -translate-y-1/2 z-20 pointer-events-none"
           style={{
-            width: 0,
-            height: 0,
+            width: 0, height: 0,
             borderTop: "10px solid transparent",
             borderBottom: "10px solid transparent",
             borderRight: "14px solid var(--reel-winner-line, var(--skin-accent))",
