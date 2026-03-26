@@ -326,3 +326,72 @@ body {
 .animate-winner-flash {
   animation: winner-flash 0.5s ease-in-out infinite;
 }
+
+/* ============================================
+   MACHINE PART STYLES
+   These use CSS variables that contain gradients.
+   Gradients can't be used as var() fallbacks in
+   inline styles, so they must be applied via classes.
+   ============================================ */
+
+.machine-frame {
+  border: 3px solid var(--machine-border);
+  background: var(--machine-body-bg);
+}
+
+.machine-marquee {
+  background: var(--marquee-bg);
+  box-shadow: var(--marquee-glow);
+  border-bottom: 3px solid var(--machine-border);
+}
+
+.machine-body {
+  background: var(--machine-body-bg);
+  box-shadow: var(--machine-body-shadow);
+}
+
+.machine-winner-area {
+  background: var(--machine-body-bg);
+}
+
+.machine-base {
+  background: var(--base-bg);
+  box-shadow: var(--base-shadow);
+}
+
+.machine-base-tray {
+  background: var(--base-tray);
+}
+
+.machine-reel-bg {
+  background: var(--reel-bg);
+}
+
+.machine-rivet {
+  background: var(--rivet-color);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.machine-handle-base {
+  background: var(--handle-base);
+}
+
+.machine-handle-shaft {
+  background: var(--handle-shaft);
+}
+
+.machine-handle-ball {
+  background: var(--handle-ball);
+}
+
+.machine-button-primary {
+  background: var(--machine-button-primary);
+  color: var(--machine-button-primary-text);
+  box-shadow: 0 4px 0 var(--machine-button-primary-shadow), 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.machine-button-secondary {
+  background: var(--machine-button-secondary);
+  color: var(--machine-button-secondary-text);
+  box-shadow: 0 4px 0 var(--machine-button-secondary-shadow), 0 6px 12px rgba(0,0,0,0.4);
+}

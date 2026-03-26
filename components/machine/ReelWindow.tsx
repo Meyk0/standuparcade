@@ -84,10 +84,9 @@ export default function ReelWindow({
   return (
     <div className="relative">
       <div
-        className="relative rounded-lg overflow-hidden"
+        className="machine-reel-bg relative rounded-lg overflow-hidden"
         style={{
           height: windowHeight,
-          background: "var(--reel-bg, var(--skin-reel-bg))",
           boxShadow: "inset 0 4px 12px rgba(0,0,0,0.6), inset 0 -4px 12px rgba(0,0,0,0.4)",
         }}
       >

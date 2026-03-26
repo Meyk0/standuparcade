@@ -10,16 +10,8 @@ export default function MachineMarquee({ teamName, isSpinning }: MachineMarqueeP
 
   return (
     <div className="relative">
-      {/* Marquee panel */}
-      <div
-        className="relative rounded-t-2xl px-4 py-3 text-center overflow-hidden"
-        style={{
-          background: "var(--marquee-bg, linear-gradient(180deg, #2a1a0a, #1a0f05))",
-          boxShadow: "var(--marquee-glow, 0 0 20px rgba(255, 215, 0, 0.3))",
-          borderBottom: "3px solid var(--machine-border, #c0a050)",
-        }}
-      >
-        {/* Chase lights */}
+      <div className="machine-marquee relative rounded-t-2xl px-4 py-3 text-center overflow-hidden">
+        {/* Chase lights — sides */}
         <div className="absolute inset-0 flex items-center justify-between px-1">
           <div className="flex flex-col gap-2 py-1">
             {[...Array(Math.ceil(lightCount / 4))].map((_, i) => (
@@ -27,8 +19,8 @@ export default function MachineMarquee({ teamName, isSpinning }: MachineMarqueeP
                 key={`l-${i}`}
                 className="w-2 h-2 rounded-full"
                 style={{
-                  background: "var(--marquee-light-color, #ffd700)",
-                  boxShadow: `0 0 6px var(--marquee-light-color, #ffd700)`,
+                  background: "var(--marquee-light-color)",
+                  boxShadow: `0 0 6px var(--marquee-light-color)`,
                   animation: `chase-light 1.5s ease-in-out infinite`,
                   animationDelay: `${i * 0.2}s`,
                   opacity: isSpinning ? 1 : 0.5,
@@ -42,8 +34,8 @@ export default function MachineMarquee({ teamName, isSpinning }: MachineMarqueeP
                 key={`r-${i}`}
                 className="w-2 h-2 rounded-full"
                 style={{
-                  background: "var(--marquee-light-color, #ffd700)",
-                  boxShadow: `0 0 6px var(--marquee-light-color, #ffd700)`,
+                  background: "var(--marquee-light-color)",
+                  boxShadow: `0 0 6px var(--marquee-light-color)`,
                   animation: `chase-light 1.5s ease-in-out infinite`,
                   animationDelay: `${(i + 3) * 0.2}s`,
                   opacity: isSpinning ? 1 : 0.5,
@@ -60,10 +52,8 @@ export default function MachineMarquee({ teamName, isSpinning }: MachineMarqueeP
               key={`t-${i}`}
               className="w-2 h-2 rounded-full"
               style={{
-                background: i % 2 === 0
-                  ? "var(--light-color-1, #ff4444)"
-                  : "var(--light-color-2, #ffd700)",
-                boxShadow: `0 0 6px ${i % 2 === 0 ? "var(--light-color-1, #ff4444)" : "var(--light-color-2, #ffd700)"}`,
+                background: i % 2 === 0 ? "var(--light-color-1)" : "var(--light-color-2)",
+                boxShadow: `0 0 6px ${i % 2 === 0 ? "var(--light-color-1)" : "var(--light-color-2)"}`,
                 animation: `chase-light 1.5s ease-in-out infinite`,
                 animationDelay: `${i * 0.15}s`,
               }}
@@ -75,8 +65,8 @@ export default function MachineMarquee({ teamName, isSpinning }: MachineMarqueeP
         <h2
           className="relative z-10 text-xs sm:text-sm font-bold uppercase tracking-[0.2em] truncate"
           style={{
-            color: "var(--marquee-text, #ffd700)",
-            textShadow: "var(--marquee-text-shadow, 0 0 10px rgba(255, 215, 0, 0.6))",
+            color: "var(--marquee-text)",
+            textShadow: "var(--marquee-text-shadow)",
           }}
         >
           {teamName || "STANDUP SLOTS"}
@@ -89,10 +79,8 @@ export default function MachineMarquee({ teamName, isSpinning }: MachineMarqueeP
               key={`b-${i}`}
               className="w-2 h-2 rounded-full"
               style={{
-                background: i % 2 === 0
-                  ? "var(--light-color-2, #ffd700)"
-                  : "var(--light-color-1, #ff4444)",
-                boxShadow: `0 0 6px ${i % 2 === 0 ? "var(--light-color-2, #ffd700)" : "var(--light-color-1, #ff4444)"}`,
+                background: i % 2 === 0 ? "var(--light-color-2)" : "var(--light-color-1)",
+                boxShadow: `0 0 6px ${i % 2 === 0 ? "var(--light-color-2)" : "var(--light-color-1)"}`,
                 animation: `chase-light 1.5s ease-in-out infinite`,
                 animationDelay: `${(i + 3) * 0.15}s`,
               }}

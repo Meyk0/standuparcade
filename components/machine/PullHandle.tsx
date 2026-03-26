@@ -7,8 +7,8 @@ interface PullHandleProps {
   onPull: () => void;
 }
 
-const HANDLE_TRAVEL = 60; // px the ball can travel down
-const PULL_THRESHOLD = 30; // px before triggering spin
+const HANDLE_TRAVEL = 60;
+const PULL_THRESHOLD = 30;
 
 export default function PullHandle({ disabled, onPull }: PullHandleProps) {
   const [handleState, setHandleState] = useState<"idle" | "pulling" | "returning">("idle");
@@ -78,21 +78,14 @@ export default function PullHandle({ disabled, onPull }: PullHandleProps) {
 
   return (
     <div className="relative flex flex-col items-center select-none" style={{ width: "40px" }}>
-      {/* Pivot mount at top */}
-      <div
-        className="w-8 h-4 rounded-t-lg"
-        style={{
-          background: "var(--handle-base, linear-gradient(180deg, #888, #555))",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.5)",
-        }}
-      />
+      {/* Pivot mount */}
+      <div className="machine-handle-base w-8 h-4 rounded-t-lg" style={{ boxShadow: "0 2px 4px rgba(0,0,0,0.5)" }} />
 
       {/* Shaft */}
       <div
-        className="relative w-2 rounded-sm"
+        className="machine-handle-shaft relative w-2 rounded-sm"
         style={{
           height: `${80 + ballOffset}px`,
-          background: "var(--handle-shaft, linear-gradient(90deg, #999, #ccc 40%, #999))",
           boxShadow: "1px 0 2px rgba(0,0,0,0.3), -1px 0 2px rgba(0,0,0,0.3)",
           transition:
             handleState !== "idle" && !isDragging.current
@@ -103,12 +96,11 @@ export default function PullHandle({ disabled, onPull }: PullHandleProps) {
 
       {/* Ball grip */}
       <div
-        className="relative cursor-grab active:cursor-grabbing"
+        className="machine-handle-ball relative cursor-grab active:cursor-grabbing"
         style={{
           width: "32px",
           height: "32px",
           borderRadius: "50%",
-          background: "var(--handle-ball, radial-gradient(circle at 35% 35%, #ff6666, #cc0000 50%, #880000))",
           boxShadow:
             "0 4px 8px rgba(0,0,0,0.5), inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.3)",
           transition:
@@ -123,7 +115,7 @@ export default function PullHandle({ disabled, onPull }: PullHandleProps) {
         onPointerCancel={handlePointerUp}
         onClick={handleClick}
       >
-        {/* Shine highlight */}
+        {/* Shine */}
         <div
           className="absolute rounded-full"
           style={{

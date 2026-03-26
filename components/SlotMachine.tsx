@@ -7,6 +7,7 @@ import MachineBase from "./machine/MachineBase";
 import ReelWindow from "./machine/ReelWindow";
 import PullHandle from "./machine/PullHandle";
 import { Member } from "@/lib/types";
+import Link from "next/link";
 
 interface SlotMachineProps {
   teamName: string;
@@ -59,7 +60,6 @@ export default function SlotMachine({
 
   const isSpinning = status === "spinning";
   const isWinner = status === "winner";
-  // Handle can only be pulled when idle and pool is not empty
   const handleDisabled = isSpinning || isWinner || poolEmpty;
 
   return (
@@ -72,13 +72,7 @@ export default function SlotMachine({
         }}
       >
         {/* Outer machine frame */}
-        <div
-          className="rounded-2xl overflow-hidden"
-          style={{
-            border: "3px solid var(--machine-border, #c0a050)",
-            background: "var(--machine-body-bg, linear-gradient(180deg, #d0d0d0, #a0a0a0, #808080))",
-          }}
-        >
+        <div className="machine-frame rounded-2xl overflow-hidden">
           {/* Marquee */}
           <MachineMarquee teamName={teamName} isSpinning={isSpinning} />
 
@@ -92,33 +86,39 @@ export default function SlotMachine({
             />
           </MachineBody>
 
-          {/* Winner announcement */}
-          {isWinner && currentWinner && winnerRevealed && (
-            <div
-              className="text-center py-3 px-4"
-              style={{
-                background: "var(--machine-body-bg, linear-gradient(180deg, #a0a0a0, #808080))",
-              }}
-            >
-              <div
-                className="text-base sm:text-lg font-bold uppercase tracking-wider animate-winner-flash mb-1"
-                style={{
-                  color: "var(--skin-accent)",
-                  textShadow: "0 0 10px var(--skin-accent)",
-                }}
-              >
-                {currentWinner.name} — YOU&apos;RE UP!
-              </div>
-              {currentWinner.tagline && (
-                <span
-                  className="text-xs sm:text-sm italic"
-                  style={{ color: "var(--reel-text, var(--skin-text))" }}
+          {/* Winner announcement — fixed height to prevent layout shift */}
+          <div className="machine-winner-area" style={{ minHeight: "52px" }}>
+            {isWinner && currentWinner && winnerRevealed ? (
+              <div className="text-center py-2 px-4">
+                <div
+                  className="text-sm sm:text-base font-bold uppercase tracking-wider animate-winner-flash mb-0.5"
+                  style={{
+                    color: "var(--skin-accent)",
+                    textShadow: "0 0 10px var(--skin-accent)",
+                  }}
                 >
-                  {currentWinner.tagline}
+                  {currentWinner.name} — YOU&apos;RE UP!
+                </div>
+                {currentWinner.tagline && (
+                  <span
+                    className="text-xs italic"
+                    style={{ color: "var(--reel-text)" }}
+                  >
+                    {currentWinner.tagline}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-2 px-4">
+                <span
+                  className="text-[10px] uppercase tracking-[0.15em]"
+                  style={{ color: "var(--machine-label-color)" }}
+                >
+                  {isSpinning ? "" : poolEmpty ? "ALL PICKED" : ""}
                 </span>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
 
           {/* Base with buttons */}
           <MachineBase
@@ -128,6 +128,17 @@ export default function SlotMachine({
             onReset={onReset}
             onNewSession={onNewSession}
           />
+        </div>
+
+        {/* Home link under the machine */}
+        <div className="text-center mt-3">
+          <Link
+            href="/"
+            className="text-[10px] uppercase tracking-wider hover:opacity-80 transition-opacity"
+            style={{ color: "var(--skin-text-secondary)" }}
+          >
+            ← HOME
+          </Link>
         </div>
       </div>
 
@@ -139,13 +150,13 @@ export default function SlotMachine({
         />
       </div>
 
-      {/* Mobile pull button (below machine on small screens) */}
+      {/* Mobile pull button */}
       <button
         onClick={handleSpin}
         disabled={handleDisabled}
         className="sm:hidden fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full font-bold text-xs uppercase tracking-wider transition-all active:scale-90 disabled:opacity-40"
         style={{
-          background: "var(--handle-ball, radial-gradient(circle at 35% 35%, #ff6666, #cc0000 50%, #880000))",
+          background: "var(--handle-ball)",
           boxShadow: "0 4px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3)",
           color: "#fff",
           textShadow: "0 1px 2px rgba(0,0,0,0.5)",
