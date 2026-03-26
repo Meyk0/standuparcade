@@ -2,26 +2,180 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================
+   SKIN: Arcade (default)
+   CRT phosphor, Atari/Commodore
+   ============================================ */
+[data-skin="arcade"] {
+  --skin-bg: #0a0a0a;
+  --skin-bg-secondary: #111111;
+  --skin-text: #33ff33;
+  --skin-text-secondary: #1a9c1a;
+  --skin-accent: #ffd700;
+  --skin-accent-secondary: #ff6600;
+  --skin-border: #33ff33;
+  --skin-reel-bg: #050505;
+  --skin-button-bg: #33ff33;
+  --skin-button-text: #0a0a0a;
+  --skin-button-hover: #66ff66;
+  --skin-danger: #ff3333;
+  --skin-muted: #2a2a2a;
+  --skin-font: "Press Start 2P", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-skin="arcade"] body {
+  background-image:
+    radial-gradient(ellipse at center, rgba(51, 255, 51, 0.03) 0%, transparent 70%);
+  text-shadow: 0 0 5px rgba(51, 255, 51, 0.3);
 }
+
+/* ============================================
+   SKIN: Synthwave
+   Outrun grid, Miami Vice
+   ============================================ */
+[data-skin="synthwave"] {
+  --skin-bg: #1a0533;
+  --skin-bg-secondary: #2d0a4e;
+  --skin-text: #00ffff;
+  --skin-text-secondary: #ff71ce;
+  --skin-accent: #ff71ce;
+  --skin-accent-secondary: #01cdfe;
+  --skin-border: #b967ff;
+  --skin-reel-bg: #0d0221;
+  --skin-button-bg: #ff71ce;
+  --skin-button-text: #1a0533;
+  --skin-button-hover: #ff99dd;
+  --skin-danger: #ff3366;
+  --skin-muted: #2d0a4e;
+  --skin-font: "Orbitron", sans-serif;
+}
+
+[data-skin="synthwave"] body {
+  background-image:
+    linear-gradient(180deg, #1a0533 0%, #0d0221 50%, #1a0533 100%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 113, 206, 0.03) 2px,
+      rgba(255, 113, 206, 0.03) 4px
+    );
+}
+
+/* ============================================
+   SKIN: Noir
+   Film grain, detective thriller
+   ============================================ */
+[data-skin="noir"] {
+  --skin-bg: #0d0d0d;
+  --skin-bg-secondary: #1a1a1a;
+  --skin-text: #d4d0c8;
+  --skin-text-secondary: #8a8680;
+  --skin-accent: #cc2222;
+  --skin-accent-secondary: #881111;
+  --skin-border: #3a3a3a;
+  --skin-reel-bg: #080808;
+  --skin-button-bg: #cc2222;
+  --skin-button-text: #d4d0c8;
+  --skin-button-hover: #ee3333;
+  --skin-danger: #cc2222;
+  --skin-muted: #1a1a1a;
+  --skin-font: "Special Elite", cursive;
+}
+
+[data-skin="noir"] body {
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   SKIN: Harajuku
+   Pastel Tamagotchi, J-pop
+   ============================================ */
+[data-skin="harajuku"] {
+  --skin-bg: #ffe4ec;
+  --skin-bg-secondary: #ffd1dc;
+  --skin-text: #4a2040;
+  --skin-text-secondary: #7a5070;
+  --skin-accent: #b19cd9;
+  --skin-accent-secondary: #98d8c8;
+  --skin-border: #b19cd9;
+  --skin-reel-bg: #fff0f5;
+  --skin-button-bg: #b19cd9;
+  --skin-button-text: #ffffff;
+  --skin-button-hover: #c4b0e8;
+  --skin-danger: #ff6b8a;
+  --skin-muted: #fce4ec;
+  --skin-font: "Nunito", sans-serif;
+}
+
+[data-skin="harajuku"] body {
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(177, 156, 217, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(152, 216, 200, 0.1) 0%, transparent 50%);
+}
+
+/* ============================================
+   SKIN: Pub Quiz
+   Chalkboard, British pub
+   ============================================ */
+[data-skin="pub-quiz"] {
+  --skin-bg: #1b3a2d;
+  --skin-bg-secondary: #244f3d;
+  --skin-text: #e8e0d0;
+  --skin-text-secondary: #b0a890;
+  --skin-accent: #d4a843;
+  --skin-accent-secondary: #c69030;
+  --skin-border: #3a6b52;
+  --skin-reel-bg: #152e24;
+  --skin-button-bg: #d4a843;
+  --skin-button-text: #1b3a2d;
+  --skin-button-hover: #e0bb5a;
+  --skin-danger: #cc4444;
+  --skin-muted: #244f3d;
+  --skin-font: "Patrick Hand", cursive;
+}
+
+[data-skin="pub-quiz"] body {
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='chalk'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23chalk)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--skin-text);
+  background-color: var(--skin-bg);
+  font-family: var(--skin-font);
+  transition: background-color 0.3s, color 0.3s, font-family 0.3s;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Slot reel animation */
+@keyframes reel-spin {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+@keyframes winner-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes coin-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-reel-spin {
+  animation: reel-spin 0.1s linear infinite;
+}
+
+.animate-winner-flash {
+  animation: winner-flash 0.5s ease-in-out infinite;
+}
+
+.animate-coin-bounce {
+  animation: coin-bounce 0.6s ease-in-out infinite;
 }
