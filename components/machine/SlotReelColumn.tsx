@@ -201,7 +201,7 @@ export default function SlotReelColumn({
       style={{ height: VISIBLE_ROWS * ROW_HEIGHT }}
     >
       <div
-        className="will-change-transform"
+        className="absolute left-0 right-0 will-change-transform"
         style={{
           transform: `translateY(${isIdle ? 0 : translateY}px)`,
         }}
