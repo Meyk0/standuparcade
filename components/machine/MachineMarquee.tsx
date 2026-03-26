@@ -7,15 +7,21 @@ interface MachineMarqueeProps {
 }
 
 export default function MachineMarquee({ teamName, isSpinning, marqueeImage }: MachineMarqueeProps) {
-  // Image-based marquee
+  // Image-based marquee — fill width, crop to fit
   if (marqueeImage) {
     return (
-      <div className="relative">
+      <div
+        className="relative overflow-hidden rounded-t-2xl"
+        style={{
+          height: "120px",
+          background: "#0a0808",
+        }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={marqueeImage}
           alt={teamName || "Standup Slots"}
-          className="w-full h-auto block"
+          className="w-full h-full object-cover object-center"
           draggable={false}
         />
       </div>

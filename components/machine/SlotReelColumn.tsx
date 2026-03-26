@@ -13,6 +13,18 @@ interface SlotReelColumnProps {
 const ROW_HEIGHT = 64;
 const VISIBLE_ROWS = 3;
 
+// Classic slot machine symbols mixed in during spinning
+const SLOT_SYMBOLS = ["🍒", "🍋", "🔔", "💎", "7️⃣", "🍀", "⭐", "🍊", "🎰", "BAR"];
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/** Returns true if the item is a symbol (not a name) */
+function isSymbol(item: string): boolean {
+  return SLOT_SYMBOLS.includes(item);
+}
+
 export default function SlotReelColumn({
   names,
   winnerName,
@@ -22,14 +34,13 @@ export default function SlotReelColumn({
   const rafRef = useRef<number | null>(null);
   const posRef = useRef(0);
   const phaseRef = useRef<"idle" | "spinning" | "decelerating" | "stopped">("idle");
-  const [displayItems, setDisplayItems] = useState<string[]>(["???", "???", "???"]);
+  const [displayItems, setDisplayItems] = useState<string[]>(["🎰", "???", "🍒"]);
   const [translateY, setTranslateY] = useState(0);
   const [isIdle, setIsIdle] = useState(true);
   const [highlightCenter, setHighlightCenter] = useState(false);
   const namesRef = useRef(names);
   const winnerRef = useRef(winnerName);
 
-  // Keep refs in sync
   useEffect(() => {
     namesRef.current = names;
     winnerRef.current = winnerName;
@@ -42,19 +53,22 @@ export default function SlotReelColumn({
     }
   }, []);
 
-  // Build a long strip for spinning display
+  // Build a spin strip mixing names and slot symbols
   const buildSpinStrip = useCallback(() => {
     const allNames = namesRef.current.length > 0 ? namesRef.current : ["???"];
     const strip: string[] = [];
-    // Build a strip of ~40 items for smooth scrolling
     const count = Math.max(40, allNames.length * 5);
     for (let i = 0; i < count; i++) {
-      strip.push(allNames[i % allNames.length]);
+      // ~40% chance of a slot symbol, 60% chance of a name
+      if (Math.random() < 0.4) {
+        strip.push(pickRandom(SLOT_SYMBOLS));
+      } else {
+        strip.push(allNames[i % allNames.length]);
+      }
     }
     return strip;
   }, []);
 
-  // Start fast spinning
   const startSpinning = useCallback(() => {
     stopAnimation();
     phaseRef.current = "spinning";
@@ -66,17 +80,14 @@ export default function SlotReelColumn({
 
     posRef.current = 0;
     let lastTime = performance.now();
-    const speed = -ROW_HEIGHT * 14; // px/sec
+    const speed = -ROW_HEIGHT * 14;
 
     const animate = (time: number) => {
       if (phaseRef.current !== "spinning") return;
-
       const dt = (time - lastTime) / 1000;
       lastTime = time;
-
       posRef.current += speed * dt;
 
-      // Wrap around seamlessly
       const stripHeight = strip.length * ROW_HEIGHT;
       const wrapPoint = -stripHeight / 2;
       if (posRef.current < wrapPoint) {
@@ -90,7 +101,6 @@ export default function SlotReelColumn({
     rafRef.current = requestAnimationFrame(animate);
   }, [stopAnimation, buildSpinStrip]);
 
-  // Decelerate and land on winner
   const startDecelerating = useCallback(() => {
     stopAnimation();
     phaseRef.current = "decelerating";
@@ -98,31 +108,30 @@ export default function SlotReelColumn({
     const winner = winnerRef.current;
     const allNames = namesRef.current.length > 0 ? namesRef.current : ["???"];
 
-    // Build the final landing strip: [neighbor above, WINNER, neighbor below]
-    // Plus extra items above for the deceleration runway
     const finalStrip: string[] = [];
-    const runwayLength = 15; // names to scroll through during decel
+    const runwayLength = 15;
 
-    // Pick random non-winner names for the runway
+    // Runway: mix of names and symbols for that classic feel
     const others = allNames.filter((n) => n !== winner);
-    const pool = others.length > 0 ? others : allNames;
+    const namePool = others.length > 0 ? others : allNames;
     for (let i = 0; i < runwayLength; i++) {
-      finalStrip.push(pool[Math.floor(Math.random() * pool.length)]);
+      if (Math.random() < 0.35) {
+        finalStrip.push(pickRandom(SLOT_SYMBOLS));
+      } else {
+        finalStrip.push(pickRandom(namePool));
+      }
     }
 
-    // Add the final 3 visible names: [above, WINNER, below]
-    finalStrip.push(pool[Math.floor(Math.random() * pool.length)]); // above
-    finalStrip.push(winner); // center (this is the target)
-    finalStrip.push(pool[Math.floor(Math.random() * pool.length)]); // below
+    // Final 3 visible: [symbol/name above, WINNER, symbol/name below]
+    finalStrip.push(pickRandom(SLOT_SYMBOLS));
+    finalStrip.push(winner);
+    finalStrip.push(pickRandom(SLOT_SYMBOLS));
 
     setDisplayItems(finalStrip);
 
-    // Target: winner should be in center row (index = runwayLength + 1)
-    // translateY = -(winnerIndex - 1) * ROW_HEIGHT to show it in center
     const winnerIndex = runwayLength + 1;
     const targetTranslateY = -(winnerIndex - 1) * ROW_HEIGHT;
 
-    // Start from top of the strip (scrolling down through runway)
     const startY = 0;
     posRef.current = startY;
     setTranslateY(startY);
@@ -133,14 +142,11 @@ export default function SlotReelColumn({
 
     const animate = (time: number) => {
       if (phaseRef.current !== "decelerating") return;
-
       const elapsed = time - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      // Cubic ease-out
       const eased = 1 - Math.pow(1 - progress, 3);
 
-      // Subtle bounce near end
       let bounce = 0;
       if (progress > 0.8) {
         const bounceT = (progress - 0.8) / 0.2;
@@ -154,7 +160,6 @@ export default function SlotReelColumn({
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(animate);
       } else {
-        // Snap to exact target
         posRef.current = targetTranslateY;
         setTranslateY(targetTranslateY);
         phaseRef.current = "stopped";
@@ -166,18 +171,16 @@ export default function SlotReelColumn({
     rafRef.current = requestAnimationFrame(animate);
   }, [stopAnimation, onStopped]);
 
-  // Reset to idle
   const resetToIdle = useCallback(() => {
     stopAnimation();
     phaseRef.current = "idle";
     posRef.current = 0;
     setTranslateY(0);
-    setDisplayItems(["???", "???", "???"]);
+    setDisplayItems(["🍒", "???", "7️⃣"]);
     setIsIdle(true);
     setHighlightCenter(false);
   }, [stopAnimation]);
 
-  // React to status changes
   useEffect(() => {
     if (status === "spinning" && phaseRef.current !== "spinning") {
       startSpinning();
@@ -188,7 +191,6 @@ export default function SlotReelColumn({
     }
   }, [status, startSpinning, startDecelerating, resetToIdle]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return stopAnimation;
   }, [stopAnimation]);
@@ -198,25 +200,30 @@ export default function SlotReelColumn({
       className="relative overflow-hidden"
       style={{ height: VISIBLE_ROWS * ROW_HEIGHT }}
     >
-      {/* Name strip */}
       <div
         className="will-change-transform"
         style={{
           transform: `translateY(${isIdle ? 0 : translateY}px)`,
         }}
       >
-        {displayItems.map((name, i) => {
-          // Determine if this item is the winner in the center
-          const isWinnerItem = highlightCenter && name === winnerRef.current &&
+        {displayItems.map((item, i) => {
+          const isWinnerItem = highlightCenter && item === winnerRef.current &&
             Math.abs(posRef.current + (i - 1) * ROW_HEIGHT) < ROW_HEIGHT * 0.5;
+          const sym = isSymbol(item);
 
           return (
             <div
-              key={`${i}-${name}`}
+              key={`${i}-${item}`}
               className="flex items-center justify-center font-bold uppercase tracking-wider"
               style={{
                 height: ROW_HEIGHT,
-                fontSize: name.length > 10 ? "0.75rem" : name.length > 7 ? "0.875rem" : "1.1rem",
+                fontSize: sym
+                  ? "1.8rem"
+                  : item.length > 10
+                    ? "0.75rem"
+                    : item.length > 7
+                      ? "0.875rem"
+                      : "1.1rem",
                 color: isWinnerItem
                   ? "var(--skin-accent)"
                   : "var(--reel-text, var(--skin-text))",
@@ -225,7 +232,7 @@ export default function SlotReelColumn({
                   : "none",
               }}
             >
-              <span className="truncate max-w-[140px] px-2">{name}</span>
+              <span className="truncate max-w-[140px] px-2">{item}</span>
             </div>
           );
         })}

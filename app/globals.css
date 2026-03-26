@@ -335,7 +335,6 @@ body {
    ============================================ */
 
 .machine-frame {
-  border: 3px solid var(--machine-border);
   background: var(--machine-body-bg);
 }
 

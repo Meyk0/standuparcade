@@ -73,15 +73,15 @@ export default function SlotMachine({
         className="relative w-full max-w-[420px]"
         style={{ filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.6))" }}
       >
-        {/* Machine */}
-        <div className="machine-frame rounded-2xl overflow-hidden">
-          {/* Marquee — image or CSS */}
-          <MachineMarquee
-            teamName={teamName}
-            isSpinning={isSpinning}
-            marqueeImage={skin.marqueeImage}
-          />
+        {/* Marquee — sits above the machine body, full width */}
+        <MachineMarquee
+          teamName={teamName}
+          isSpinning={isSpinning}
+          marqueeImage={skin.marqueeImage}
+        />
 
+        {/* Machine body */}
+        <div className="machine-frame rounded-b-2xl overflow-hidden">
           {/* Body with reels */}
           <MachineBody total={total} remaining={remaining}>
             <ReelWindow
