@@ -1,119 +1,63 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 interface PullHandleProps {
   disabled: boolean;
   onPull: () => void;
 }
 
-const HANDLE_TRAVEL = 60;
-const PULL_THRESHOLD = 30;
-
 export default function PullHandle({ disabled, onPull }: PullHandleProps) {
-  const [handleState, setHandleState] = useState<"idle" | "pulling" | "returning">("idle");
-  const [dragOffset, setDragOffset] = useState(0);
-  const isDragging = useRef(false);
-  const startY = useRef(0);
-
-  const triggerPull = useCallback(() => {
-    if (disabled) return;
-    setHandleState("pulling");
-    setDragOffset(HANDLE_TRAVEL);
-
-    setTimeout(() => {
-      onPull();
-      setHandleState("returning");
-      setDragOffset(0);
-
-      setTimeout(() => {
-        setHandleState("idle");
-      }, 300);
-    }, 300);
-  }, [disabled, onPull]);
-
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      if (disabled) return;
-      e.preventDefault();
-      isDragging.current = true;
-      startY.current = e.clientY;
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    },
-    [disabled]
-  );
-
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!isDragging.current || disabled) return;
-      const delta = Math.max(0, Math.min(HANDLE_TRAVEL, e.clientY - startY.current));
-      setDragOffset(delta);
-    },
-    [disabled]
-  );
-
-  const handlePointerUp = useCallback(() => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-
-    if (dragOffset >= PULL_THRESHOLD && !disabled) {
-      triggerPull();
-    } else {
-      setDragOffset(0);
-      setHandleState("idle");
-    }
-  }, [dragOffset, disabled, triggerPull]);
+  const [pulling, setPulling] = useState(false);
 
   const handleClick = useCallback(() => {
-    if (isDragging.current || disabled) return;
-    triggerPull();
-  }, [disabled, triggerPull]);
+    if (disabled || pulling) return;
 
-  const ballOffset =
-    handleState === "pulling"
-      ? HANDLE_TRAVEL
-      : handleState === "returning"
-        ? 0
-        : dragOffset;
+    setPulling(true);
+
+    // Animate pull down, then trigger spin, then spring back
+    setTimeout(() => {
+      onPull();
+      setTimeout(() => {
+        setPulling(false);
+      }, 300);
+    }, 250);
+  }, [disabled, pulling, onPull]);
 
   return (
-    <div className="relative flex flex-col items-center select-none" style={{ width: "40px" }}>
+    <div
+      className="flex flex-col items-center select-none cursor-pointer"
+      style={{ width: "40px" }}
+      onClick={handleClick}
+    >
       {/* Pivot mount */}
-      <div className="machine-handle-base w-8 h-4 rounded-t-lg" style={{ boxShadow: "0 2px 4px rgba(0,0,0,0.5)" }} />
-
-      {/* Shaft */}
       <div
-        className="machine-handle-shaft relative w-2 rounded-sm"
+        className="machine-handle-base w-8 h-4 rounded-t-lg"
+        style={{ boxShadow: "0 2px 4px rgba(0,0,0,0.5)" }}
+      />
+
+      {/* Shaft — grows when pulled */}
+      <div
+        className="machine-handle-shaft w-2 rounded-sm"
         style={{
-          height: `${80 + ballOffset}px`,
+          height: pulling ? "140px" : "80px",
           boxShadow: "1px 0 2px rgba(0,0,0,0.3), -1px 0 2px rgba(0,0,0,0.3)",
-          transition:
-            handleState !== "idle" && !isDragging.current
-              ? "height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
-              : "none",
+          transition: "height 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
         }}
       />
 
       {/* Ball grip */}
       <div
-        className="machine-handle-ball relative cursor-grab active:cursor-grabbing"
+        className="machine-handle-ball"
         style={{
           width: "32px",
           height: "32px",
           borderRadius: "50%",
           boxShadow:
             "0 4px 8px rgba(0,0,0,0.5), inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.3)",
-          transition:
-            handleState !== "idle" && !isDragging.current
-              ? "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
-              : "none",
-          opacity: disabled ? 0.5 : 1,
+          opacity: disabled ? 0.4 : 1,
+          transition: "opacity 0.2s",
         }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onClick={handleClick}
       >
         {/* Shine */}
         <div

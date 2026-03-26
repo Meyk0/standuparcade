@@ -79,28 +79,61 @@ export default function TeamWorkspace({
   }, [supabase, team.id]);
 
   // Fetch fresh data on mount
-  // Fetch fresh data on mount + reset any stuck spinning/winner states
+  // Fetch fresh data on mount + reset any stuck/stale session states
   useEffect(() => {
-    fetchMembers();
     fetchTeam();
-    // Fetch session and reset if stuck in spinning/winner state
+
     (async () => {
-      const { data } = await supabase
+      // Fetch members first (needed to build pool)
+      const { data: freshMembers } = await supabase
+        .from("members")
+        .select("*")
+        .eq("team_id", initialTeam.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: true });
+      if (freshMembers) setMembers(freshMembers);
+
+      const today = new Date().toISOString().split("T")[0];
+      const available = (freshMembers || []).filter(
+        (m: Member) => m.is_active && m.ooo_date !== today
+      );
+      const availableIds = available.map((m: Member) => m.id);
+
+      // Fetch session
+      const { data: sess } = await supabase
         .from("session_state")
         .select("*")
         .eq("team_id", initialTeam.id)
         .single();
-      if (data) {
-        if (data.status === "spinning" || data.status === "winner") {
-          // Reset stuck session to idle
+
+      if (sess) {
+        // Reset if stuck in spinning/winner, or if pool is empty but members exist
+        const isStuck = sess.status === "spinning" || sess.status === "winner";
+        const poolDepleted = (!sess.spin_pool || sess.spin_pool.length === 0) && availableIds.length > 0;
+
+        if (isStuck || (poolDepleted && (!sess.order_picked || sess.order_picked.length === 0))) {
+          const resetData = {
+            status: "idle" as const,
+            current_winner: null,
+            spin_pool: availableIds,
+            order_picked: [],
+            updated_at: new Date().toISOString(),
+          };
+          await supabase
+            .from("session_state")
+            .update(resetData)
+            .eq("team_id", initialTeam.id);
+          setSession({ ...sess, ...resetData });
+        } else if (isStuck) {
+          // Stuck but has valid pool/order — just reset status
           await supabase
             .from("session_state")
             .update({ status: "idle", current_winner: null, updated_at: new Date().toISOString() })
             .eq("team_id", initialTeam.id);
-          data.status = "idle";
-          data.current_winner = null;
+          setSession({ ...sess, status: "idle", current_winner: null });
+        } else {
+          setSession(sess);
         }
-        setSession(data);
       }
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
