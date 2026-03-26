@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { subscribeToMembers } from "@/lib/realtime";
 import { Team, Member } from "@/lib/types";
@@ -8,7 +9,6 @@ import { SkinName } from "@/lib/skins";
 import SkinProvider from "@/components/SkinProvider";
 import RosterManager from "@/components/RosterManager";
 import SkinPicker from "@/components/SkinPicker";
-import Link from "next/link";
 
 interface SettingsWorkspaceProps {
   initialTeam: Team;
@@ -24,6 +24,7 @@ export default function SettingsWorkspace({
   const [skin, setSkin] = useState<SkinName>(initialTeam.skin as SkinName);
 
   const supabase = createClient();
+  const router = useRouter();
 
   const fetchMembers = useCallback(async () => {
     const { data } = await supabase
@@ -61,12 +62,15 @@ export default function SettingsWorkspace({
             </h1>
             <p className="text-xs text-skin-text-secondary">SETTINGS</p>
           </div>
-          <Link
-            href={`/team/${team.slug}`}
+          <button
+            onClick={() => {
+              router.push(`/team/${team.slug}`);
+              router.refresh();
+            }}
             className="px-4 py-2 text-sm border border-skin-border rounded hover:bg-skin-muted transition-colors"
           >
             ← BACK
-          </Link>
+          </button>
         </div>
 
         <div className="space-y-10">
@@ -83,6 +87,21 @@ export default function SettingsWorkspace({
             members={members}
             onMembersChange={fetchMembers}
           />
+
+          {/* Start standup CTA */}
+          {members.length > 0 && (
+            <div className="pt-6 border-t border-skin-border">
+              <button
+                onClick={() => {
+                  router.push(`/team/${team.slug}`);
+                  router.refresh();
+                }}
+                className="w-full px-6 py-4 text-lg font-bold bg-skin-button-bg text-skin-button-text rounded-lg hover:bg-skin-button-hover transition-colors"
+              >
+                START STANDUP →
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </>

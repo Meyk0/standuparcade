@@ -59,6 +59,16 @@ export default function TeamWorkspace({
     if (data) setMembers(data);
   }, [supabase, team.id]);
 
+  // Fetch fresh session
+  const fetchSession = useCallback(async () => {
+    const { data } = await supabase
+      .from("session_state")
+      .select("*")
+      .eq("team_id", team.id)
+      .single();
+    if (data) setSession(data);
+  }, [supabase, team.id]);
+
   // Fetch team for skin changes
   const fetchTeam = useCallback(async () => {
     const { data } = await supabase
@@ -68,6 +78,13 @@ export default function TeamWorkspace({
       .single();
     if (data) setTeam(data);
   }, [supabase, team.id]);
+
+  // Fetch fresh data on mount (handles stale cache from client-side nav)
+  useEffect(() => {
+    fetchMembers();
+    fetchSession();
+    fetchTeam();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Subscribe to realtime updates
   useEffect(() => {
@@ -103,7 +120,7 @@ export default function TeamWorkspace({
       supabase.removeChannel(membersChannel);
       supabase.removeChannel(teamChannel);
     };
-  }, [supabase, team.id, fetchMembers, fetchTeam]);
+  }, [supabase, team.id, fetchMembers, fetchSession, fetchTeam]);
 
   // Show share banner on first visit
   useEffect(() => {
