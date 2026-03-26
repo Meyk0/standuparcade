@@ -3,9 +3,26 @@
 interface MachineMarqueeProps {
   teamName: string;
   isSpinning: boolean;
+  marqueeImage?: string | null;
 }
 
-export default function MachineMarquee({ teamName, isSpinning }: MachineMarqueeProps) {
+export default function MachineMarquee({ teamName, isSpinning, marqueeImage }: MachineMarqueeProps) {
+  // Image-based marquee
+  if (marqueeImage) {
+    return (
+      <div className="relative">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={marqueeImage}
+          alt={teamName || "Standup Slots"}
+          className="w-full h-auto block"
+          draggable={false}
+        />
+      </div>
+    );
+  }
+
+  // CSS-based marquee (fallback)
   const lightCount = 12;
 
   return (
