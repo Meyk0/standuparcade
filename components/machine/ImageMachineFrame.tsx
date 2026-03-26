@@ -47,14 +47,14 @@ export default function ImageMachineFrame({
         {reelContent}
       </div>
 
-      {/* Credits display — just above the reel window */}
+      {/* Credits display — on the nameplate area above the reels */}
       <div
         className="absolute flex items-center justify-center"
         style={{
-          top: `${reelWindow.top - 4}%`,
-          left: `${reelWindow.left}%`,
-          width: `${reelWindow.width}%`,
-          height: "3%",
+          top: `${reelWindow.top - 6}%`,
+          left: `${reelWindow.left + 5}%`,
+          width: `${reelWindow.width - 10}%`,
+          height: "4%",
         }}
       >
         {creditsContent}

@@ -201,7 +201,7 @@ export default function SlotMachine({
       </div>
 
       {/* Pull handle (right side, desktop only) */}
-      <div className="hidden sm:flex items-center pt-20">
+      <div className="hidden sm:flex items-start" style={{ paddingTop: useImageFrame ? "38%" : "80px" }}>
         <PullHandle disabled={handleDisabled} onPull={handleSpin} />
       </div>
 

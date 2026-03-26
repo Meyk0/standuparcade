@@ -70,9 +70,9 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     frameImage: "/machines/arcade.png",
     frameAspectRatio: 805 / 1200,
     overlayPositions: {
-      reelWindow: { top: 35, left: 15, width: 70, height: 27 },
-      winnerText: { top: 63, left: 10, width: 80 },
-      buttons: { top: 71, left: 15, width: 70 },
+      reelWindow: { top: 37, left: 17, width: 66, height: 18 },
+      winnerText: { top: 56, left: 12, width: 76 },
+      buttons: { top: 61, left: 18, width: 64 },
       handle: null,
     },
   },
