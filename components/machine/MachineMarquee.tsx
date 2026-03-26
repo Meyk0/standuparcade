@@ -13,7 +13,7 @@ export default function MachineMarquee({ teamName, isSpinning, marqueeImage }: M
       <div
         className="relative overflow-hidden rounded-t-2xl"
         style={{
-          height: "120px",
+          height: "140px",
           background: "#0a0808",
         }}
       >
