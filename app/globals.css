@@ -4,7 +4,7 @@
 
 /* ============================================
    SKIN: Arcade (default)
-   CRT phosphor, Atari/Commodore
+   Classic 80s casino slot machine — chrome, red/gold
    ============================================ */
 [data-skin="arcade"] {
   --skin-bg: #0a0a0a;
@@ -21,6 +21,36 @@
   --skin-danger: #ff3333;
   --skin-muted: #2a2a2a;
   --skin-font: "Press Start 2P", monospace;
+
+  /* Machine chrome */
+  --machine-body-bg: linear-gradient(180deg, #d8d8d8 0%, #b0b0b0 30%, #909090 70%, #787878 100%);
+  --machine-body-shadow: inset 0 2px 0 rgba(255,255,255,0.4), inset 0 -2px 0 rgba(0,0,0,0.3), 0 8px 32px rgba(0,0,0,0.5);
+  --machine-border: #c0a050;
+  --machine-label-color: #555;
+  --marquee-bg: linear-gradient(180deg, #3a1a0a 0%, #2a0f05 50%, #1a0500 100%);
+  --marquee-text: #ffd700;
+  --marquee-text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.3);
+  --marquee-light-color: #ffd700;
+  --marquee-glow: 0 0 20px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1);
+  --reel-bg: #0a0a0a;
+  --reel-text: #e8e0c8;
+  --reel-divider: rgba(255, 215, 0, 0.15);
+  --reel-winner-line: #ffd700;
+  --handle-shaft: linear-gradient(90deg, #888, #d0d0d0 40%, #888);
+  --handle-ball: radial-gradient(circle at 35% 35%, #ff6666, #cc0000 50%, #880000);
+  --handle-base: linear-gradient(180deg, #999, #666);
+  --base-bg: linear-gradient(180deg, #909090 0%, #707070 50%, #505050 100%);
+  --base-shadow: inset 0 2px 0 rgba(255,255,255,0.15);
+  --base-tray: linear-gradient(180deg, #333 0%, #1a1a1a 100%);
+  --rivet-color: radial-gradient(circle at 35% 35%, #e0e0e0, #606060);
+  --light-color-1: #ff4444;
+  --light-color-2: #ffd700;
+  --machine-button-primary: linear-gradient(180deg, #ff4444 0%, #cc0000 100%);
+  --machine-button-primary-text: #fff;
+  --machine-button-primary-shadow: #880000;
+  --machine-button-secondary: linear-gradient(180deg, #666 0%, #444 100%);
+  --machine-button-secondary-text: #ddd;
+  --machine-button-secondary-shadow: #222;
 }
 
 [data-skin="arcade"] body {
@@ -31,7 +61,7 @@
 
 /* ============================================
    SKIN: Synthwave
-   Outrun grid, Miami Vice
+   Neon LED modern machine — matte dark, neon glow
    ============================================ */
 [data-skin="synthwave"] {
   --skin-bg: #1a0533;
@@ -48,23 +78,50 @@
   --skin-danger: #ff3366;
   --skin-muted: #2d0a4e;
   --skin-font: "Orbitron", sans-serif;
+
+  /* Machine chrome — neon modern */
+  --machine-body-bg: linear-gradient(180deg, #1a1a2e 0%, #16162a 50%, #0f0f1a 100%);
+  --machine-body-shadow: inset 0 1px 0 rgba(185, 103, 255, 0.2), 0 0 30px rgba(185, 103, 255, 0.2), 0 8px 32px rgba(0,0,0,0.6);
+  --machine-border: #b967ff;
+  --machine-label-color: #b967ff;
+  --marquee-bg: linear-gradient(180deg, #0d0221 0%, #1a0533 100%);
+  --marquee-text: #00ffff;
+  --marquee-text-shadow: 0 0 10px #00ffff, 0 0 30px rgba(0, 255, 255, 0.4), 0 0 60px rgba(0, 255, 255, 0.1);
+  --marquee-light-color: #b967ff;
+  --marquee-glow: 0 0 20px rgba(185, 103, 255, 0.4), 0 0 60px rgba(185, 103, 255, 0.15);
+  --reel-bg: #0d0221;
+  --reel-text: #e0e0ff;
+  --reel-divider: rgba(185, 103, 255, 0.2);
+  --reel-winner-line: #ff71ce;
+  --handle-shaft: linear-gradient(90deg, #2a2a4a, #3a3a6a 40%, #2a2a4a);
+  --handle-ball: radial-gradient(circle at 35% 35%, #ff99dd, #ff71ce 50%, #cc4499);
+  --handle-base: linear-gradient(180deg, #2a2a4a, #1a1a2e);
+  --base-bg: linear-gradient(180deg, #16162a 0%, #0f0f1a 100%);
+  --base-shadow: inset 0 1px 0 rgba(185, 103, 255, 0.15);
+  --base-tray: linear-gradient(180deg, #0d0221 0%, #050110 100%);
+  --rivet-color: radial-gradient(circle at 35% 35%, #b967ff, #4a2080);
+  --light-color-1: #ff71ce;
+  --light-color-2: #01cdfe;
+  --machine-button-primary: linear-gradient(180deg, #ff71ce 0%, #cc4499 100%);
+  --machine-button-primary-text: #fff;
+  --machine-button-primary-shadow: #882266;
+  --machine-button-secondary: linear-gradient(180deg, #2d0a4e 0%, #1a0533 100%);
+  --machine-button-secondary-text: #b967ff;
+  --machine-button-secondary-shadow: #0d0221;
 }
 
 [data-skin="synthwave"] body {
   background-image:
     linear-gradient(180deg, #1a0533 0%, #0d0221 50%, #1a0533 100%),
     repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(255, 113, 206, 0.03) 2px,
-      rgba(255, 113, 206, 0.03) 4px
+      0deg, transparent, transparent 2px,
+      rgba(255, 113, 206, 0.03) 2px, rgba(255, 113, 206, 0.03) 4px
     );
 }
 
 /* ============================================
    SKIN: Noir
-   Film grain, detective thriller
+   Old-school one-armed bandit — brass, worn metal
    ============================================ */
 [data-skin="noir"] {
   --skin-bg: #0d0d0d;
@@ -81,6 +138,36 @@
   --skin-danger: #cc2222;
   --skin-muted: #1a1a1a;
   --skin-font: "Special Elite", cursive;
+
+  /* Machine chrome — aged brass */
+  --machine-body-bg: linear-gradient(180deg, #8a7a5a 0%, #6a5a3a 30%, #5a4a2a 70%, #4a3a1a 100%);
+  --machine-body-shadow: inset 0 2px 0 rgba(180, 160, 120, 0.3), inset 0 -2px 0 rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.6);
+  --machine-border: #5a4a2a;
+  --machine-label-color: #8a7a5a;
+  --marquee-bg: linear-gradient(180deg, #2a2018 0%, #1a1008 100%);
+  --marquee-text: #d4a843;
+  --marquee-text-shadow: 0 0 6px rgba(212, 168, 67, 0.4);
+  --marquee-light-color: #d4a843;
+  --marquee-glow: 0 0 10px rgba(212, 168, 67, 0.15);
+  --reel-bg: #0a0a08;
+  --reel-text: #c8c0b0;
+  --reel-divider: rgba(138, 122, 90, 0.2);
+  --reel-winner-line: #cc2222;
+  --handle-shaft: linear-gradient(90deg, #5a4a2a, #8a7a5a 40%, #5a4a2a);
+  --handle-ball: radial-gradient(circle at 35% 35%, #8a7a5a, #5a4a2a 50%, #3a2a1a);
+  --handle-base: linear-gradient(180deg, #6a5a3a, #4a3a1a);
+  --base-bg: linear-gradient(180deg, #5a4a2a 0%, #3a2a1a 100%);
+  --base-shadow: inset 0 1px 0 rgba(180, 160, 120, 0.15);
+  --base-tray: linear-gradient(180deg, #2a2018 0%, #1a1008 100%);
+  --rivet-color: radial-gradient(circle at 35% 35%, #b0a080, #5a4a2a);
+  --light-color-1: #cc2222;
+  --light-color-2: #d4a843;
+  --machine-button-primary: linear-gradient(180deg, #cc2222 0%, #881111 100%);
+  --machine-button-primary-text: #d4d0c8;
+  --machine-button-primary-shadow: #550000;
+  --machine-button-secondary: linear-gradient(180deg, #4a3a1a 0%, #2a2018 100%);
+  --machine-button-secondary-text: #8a8680;
+  --machine-button-secondary-shadow: #1a1008;
 }
 
 [data-skin="noir"] body {
@@ -90,7 +177,7 @@
 
 /* ============================================
    SKIN: Harajuku
-   Pastel Tamagotchi, J-pop
+   Kawaii gachapon machine — pastel pink, rounded
    ============================================ */
 [data-skin="harajuku"] {
   --skin-bg: #ffe4ec;
@@ -107,6 +194,36 @@
   --skin-danger: #ff6b8a;
   --skin-muted: #fce4ec;
   --skin-font: "Nunito", sans-serif;
+
+  /* Machine chrome — kawaii gachapon */
+  --machine-body-bg: linear-gradient(180deg, #ffb6d9 0%, #ff9ec7 30%, #ff86b5 70%, #ff6ea3 100%);
+  --machine-body-shadow: inset 0 2px 0 rgba(255,255,255,0.5), inset 0 -2px 0 rgba(200,100,150,0.2), 0 8px 32px rgba(200,100,150,0.3);
+  --machine-border: #b19cd9;
+  --machine-label-color: #7a5070;
+  --marquee-bg: linear-gradient(180deg, #d8b4fe 0%, #c084fc 100%);
+  --marquee-text: #ffffff;
+  --marquee-text-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 2px 0 rgba(177, 156, 217, 0.4);
+  --marquee-light-color: #ffd700;
+  --marquee-glow: 0 0 20px rgba(177, 156, 217, 0.3), 0 0 60px rgba(177, 156, 217, 0.1);
+  --reel-bg: #fff5f9;
+  --reel-text: #4a2040;
+  --reel-divider: rgba(177, 156, 217, 0.2);
+  --reel-winner-line: #ff6b8a;
+  --handle-shaft: linear-gradient(90deg, #ff86b5, #ffb6d9 40%, #ff86b5);
+  --handle-ball: radial-gradient(circle at 35% 35%, #ffd700, #ffb800 50%, #e6a600);
+  --handle-base: linear-gradient(180deg, #ffb6d9, #ff86b5);
+  --base-bg: linear-gradient(180deg, #ff86b5 0%, #ff6ea3 100%);
+  --base-shadow: inset 0 2px 0 rgba(255,255,255,0.3);
+  --base-tray: linear-gradient(180deg, #e8a0c0 0%, #d080a0 100%);
+  --rivet-color: radial-gradient(circle at 35% 35%, #ffd700, #ffb800);
+  --light-color-1: #ff6b8a;
+  --light-color-2: #98d8c8;
+  --machine-button-primary: linear-gradient(180deg, #b19cd9 0%, #9370c0 100%);
+  --machine-button-primary-text: #fff;
+  --machine-button-primary-shadow: #6a4a90;
+  --machine-button-secondary: linear-gradient(180deg, #ffd1dc 0%, #ffb6c8 100%);
+  --machine-button-secondary-text: #7a5070;
+  --machine-button-secondary-shadow: #e8a0b0;
 }
 
 [data-skin="harajuku"] body {
@@ -117,7 +234,7 @@
 
 /* ============================================
    SKIN: Pub Quiz
-   Chalkboard, British pub
+   British pub fruit machine — dark wood, brass
    ============================================ */
 [data-skin="pub-quiz"] {
   --skin-bg: #1b3a2d;
@@ -134,6 +251,36 @@
   --skin-danger: #cc4444;
   --skin-muted: #244f3d;
   --skin-font: "Patrick Hand", cursive;
+
+  /* Machine chrome — pub fruit machine, dark wood */
+  --machine-body-bg: linear-gradient(180deg, #4a3520 0%, #3a2810 30%, #2a1c08 70%, #1a1004 100%);
+  --machine-body-shadow: inset 0 2px 0 rgba(180, 140, 80, 0.2), inset 0 -2px 0 rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5);
+  --machine-border: #8a7040;
+  --machine-label-color: #b0a080;
+  --marquee-bg: linear-gradient(180deg, #2a4a38 0%, #1b3a2d 100%);
+  --marquee-text: #d4a843;
+  --marquee-text-shadow: 0 0 8px rgba(212, 168, 67, 0.5), 0 2px 0 rgba(0,0,0,0.3);
+  --marquee-light-color: #d4a843;
+  --marquee-glow: 0 0 15px rgba(212, 168, 67, 0.2);
+  --reel-bg: #0f2018;
+  --reel-text: #e8e0d0;
+  --reel-divider: rgba(138, 112, 64, 0.2);
+  --reel-winner-line: #d4a843;
+  --handle-shaft: linear-gradient(90deg, #4a3520, #6a5030 40%, #4a3520);
+  --handle-ball: radial-gradient(circle at 35% 35%, #c8a040, #8a7040 50%, #5a4020);
+  --handle-base: linear-gradient(180deg, #5a4020, #3a2810);
+  --base-bg: linear-gradient(180deg, #2a1c08 0%, #1a1004 100%);
+  --base-shadow: inset 0 1px 0 rgba(180, 140, 80, 0.1);
+  --base-tray: linear-gradient(180deg, #1a1004 0%, #0a0800 100%);
+  --rivet-color: radial-gradient(circle at 35% 35%, #c8a040, #6a5030);
+  --light-color-1: #cc4444;
+  --light-color-2: #d4a843;
+  --machine-button-primary: linear-gradient(180deg, #d4a843 0%, #b08830 100%);
+  --machine-button-primary-text: #1b3a2d;
+  --machine-button-primary-shadow: #6a5020;
+  --machine-button-secondary: linear-gradient(180deg, #3a2810 0%, #2a1c08 100%);
+  --machine-button-secondary-text: #b0a890;
+  --machine-button-secondary-shadow: #1a1004;
 }
 
 [data-skin="pub-quiz"] body {
@@ -142,7 +289,7 @@
 }
 
 /* ============================================
-   UTILITY CLASSES
+   GLOBAL STYLES
    ============================================ */
 
 body {
@@ -152,30 +299,30 @@ body {
   transition: background-color 0.3s, color 0.3s, font-family 0.3s;
 }
 
-/* Slot reel animation */
-@keyframes reel-spin {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-100%); }
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes chase-light {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
 }
 
 @keyframes winner-flash {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.4; }
 }
 
-@keyframes coin-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+@keyframes handle-pull {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(60px); }
 }
 
-.animate-reel-spin {
-  animation: reel-spin 0.1s linear infinite;
+@keyframes handle-return {
+  0% { transform: translateY(60px); }
+  100% { transform: translateY(0); }
 }
 
 .animate-winner-flash {
   animation: winner-flash 0.5s ease-in-out infinite;
-}
-
-.animate-coin-bounce {
-  animation: coin-bounce 0.6s ease-in-out infinite;
 }

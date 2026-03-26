@@ -5,11 +5,10 @@ import { createClient } from "@/lib/supabase";
 import { subscribeToSession, subscribeToMembers } from "@/lib/realtime";
 import { Team, Member, SessionState } from "@/lib/types";
 import SkinProvider from "@/components/SkinProvider";
-import SlotReel from "@/components/SlotReel";
-import SpinButton from "@/components/SpinButton";
+import SlotMachine from "@/components/SlotMachine";
+import SidePanel from "@/components/SidePanel";
 import MemberPool from "@/components/MemberPool";
 import OrderList from "@/components/OrderList";
-import CoinRow from "@/components/CoinRow";
 import OOOToggle from "@/components/OOOToggle";
 import type { SkinName } from "@/lib/skins";
 import Link from "next/link";
@@ -79,7 +78,7 @@ export default function TeamWorkspace({
     if (data) setTeam(data);
   }, [supabase, team.id]);
 
-  // Fetch fresh data on mount (handles stale cache from client-side nav)
+  // Fetch fresh data on mount
   useEffect(() => {
     fetchMembers();
     fetchSession();
@@ -100,7 +99,6 @@ export default function TeamWorkspace({
       fetchMembers();
     });
 
-    // Also subscribe to team changes (for skin updates)
     const teamChannel = supabase
       .channel(`team:${team.id}`)
       .on(
@@ -131,7 +129,7 @@ export default function TeamWorkspace({
     }
   }, [team.slug]);
 
-  // Spin action
+  // Spin action — pick winner, write spinning state
   const handleSpin = async () => {
     if (!session || availableMembers.length === 0) return;
 
@@ -139,7 +137,6 @@ export default function TeamWorkspace({
       ? session.spin_pool
       : availableMembers.map((m) => m.id);
 
-    // Pick random winner from pool
     const winnerId = pool[Math.floor(Math.random() * pool.length)];
 
     await supabase
@@ -151,18 +148,18 @@ export default function TeamWorkspace({
         updated_at: new Date().toISOString(),
       })
       .eq("team_id", team.id);
-
-    // After animation time, set to winner
-    setTimeout(async () => {
-      await supabase
-        .from("session_state")
-        .update({
-          status: "winner",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("team_id", team.id);
-    }, 2800);
   };
+
+  // Called by SlotMachine when all 3 reels have stopped
+  const handleAnimationComplete = useCallback(async () => {
+    await supabase
+      .from("session_state")
+      .update({
+        status: "winner",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("team_id", team.id);
+  }, [supabase, team.id]);
 
   // Confirm / Next
   const handleNext = async () => {
@@ -201,7 +198,6 @@ export default function TeamWorkspace({
       .eq("team_id", team.id);
   };
 
-  // New session (same as reset but with confirmation)
   const handleNewSession = async () => {
     if (!confirm("Start a new session? Current order will be cleared.")) return;
     await handleReset();
@@ -228,7 +224,6 @@ export default function TeamWorkspace({
     initSession();
   }, [initSession]);
 
-  // Copy link
   const handleCopy = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
@@ -241,14 +236,13 @@ export default function TeamWorkspace({
     <>
       <SkinProvider skin={team.skin as SkinName} />
 
-      <main className="min-h-screen p-4 sm:p-8 max-w-2xl mx-auto">
+      <main className="min-h-screen p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="max-w-[900px] mx-auto flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-skin-accent">
-              {team.name}
-            </h1>
-            <p className="text-xs text-skin-text-secondary">STANDUP SLOTS</p>
+            <p className="text-xs text-skin-text-secondary uppercase tracking-wider">
+              STANDUP SLOTS
+            </p>
           </div>
           <div className="flex gap-2">
             <button
@@ -268,7 +262,7 @@ export default function TeamWorkspace({
 
         {/* Share banner */}
         {showBanner && (
-          <div className="mb-6 p-3 border border-skin-accent rounded-lg bg-skin-bg-secondary flex items-center justify-between">
+          <div className="max-w-[900px] mx-auto mb-4 p-3 border border-skin-accent rounded-lg bg-skin-bg-secondary flex items-center justify-between">
             <span className="text-xs text-skin-accent">
               Share this link with your team to get started!
             </span>
@@ -295,71 +289,73 @@ export default function TeamWorkspace({
             </Link>
           </div>
         ) : (
-          <div className="space-y-8">
-            {/* Coin row */}
-            <CoinRow
-              total={availableMembers.length}
-              remaining={session?.spin_pool?.length ?? availableMembers.length}
-            />
-
-            {/* Slot reel */}
-            <SlotReel
-              status={status}
-              members={availableMembers}
-              currentWinner={currentWinner}
-            />
-
-            {/* Spin button */}
+          /* Main layout: machine + side panel */
+          <div className="max-w-[900px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 items-start">
+            {/* Slot Machine */}
             <div className="flex justify-center">
-              <SpinButton
-                status={allPicked ? "idle" : status}
+              <SlotMachine
+                teamName={team.name}
+                members={availableMembers}
+                currentWinner={currentWinner}
+                status={allPicked && status !== "winner" ? "idle" : status}
                 poolEmpty={allPicked}
+                total={availableMembers.length}
+                remaining={session?.spin_pool?.length ?? availableMembers.length}
                 onSpin={handleSpin}
                 onNext={handleNext}
                 onReset={handleReset}
                 onNewSession={handleNewSession}
+                onAnimationComplete={handleAnimationComplete}
               />
             </div>
 
-            {/* Order list */}
-            <OrderList
-              members={members}
-              orderIds={session?.order_picked || []}
-            />
-
-            {/* Member pool + OOO */}
-            <div className="border-t border-skin-border pt-6 space-y-4">
-              <MemberPool
-                members={members}
-                poolIds={session?.spin_pool || []}
-                oooMembers={oooMembers}
-              />
-
-              {/* OOO toggles */}
-              <div className="space-y-2">
-                <h3 className="text-xs text-skin-text-secondary uppercase tracking-wider">
-                  Quick OOO Toggle
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {activeMembers.map((member) => (
-                    <OOOToggle
-                      key={member.id}
-                      member={member}
-                      isOOO={member.ooo_date === today}
-                      onToggle={async (memberId, ooo) => {
-                        await supabase
-                          .from("members")
-                          .update({
-                            ooo_date: ooo ? today : null,
-                          })
-                          .eq("id", memberId);
-                        fetchMembers();
-                      }}
+            {/* Side Panel */}
+            <SidePanel
+              sections={[
+                {
+                  title: `Order (${session?.order_picked?.length || 0})`,
+                  content: (
+                    <OrderList
+                      members={members}
+                      orderIds={session?.order_picked || []}
                     />
-                  ))}
-                </div>
-              </div>
-            </div>
+                  ),
+                },
+                {
+                  title: `Remaining (${session?.spin_pool?.length || 0})`,
+                  content: (
+                    <MemberPool
+                      members={members}
+                      poolIds={session?.spin_pool || []}
+                      oooMembers={oooMembers}
+                    />
+                  ),
+                },
+                {
+                  title: "OOO Toggle",
+                  content: (
+                    <div className="flex flex-wrap gap-2">
+                      {activeMembers.map((member) => (
+                        <OOOToggle
+                          key={member.id}
+                          member={member}
+                          isOOO={member.ooo_date === today}
+                          onToggle={async (memberId, ooo) => {
+                            await supabase
+                              .from("members")
+                              .update({ ooo_date: ooo ? today : null })
+                              .eq("id", memberId);
+                            fetchMembers();
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ),
+                },
+              ]}
+            >
+              {null}
+            </SidePanel>
           </div>
         )}
       </main>
