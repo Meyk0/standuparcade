@@ -68,7 +68,7 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Press Start 2P', monospace",
     fontUrl: "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
     frameImage: "/machines/arcade.png",
-    frameAspectRatio: 1696 / 2528,
+    frameAspectRatio: 805 / 1200,
     overlayPositions: {
       reelWindow: { top: 35, left: 15, width: 70, height: 27 },
       winnerText: { top: 63, left: 10, width: 80 },

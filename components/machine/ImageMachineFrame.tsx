@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode } from "react";
-import Image from "next/image";
 import { SkinDefinition } from "@/lib/skins";
 
 interface ImageMachineFrameProps {
@@ -12,13 +11,6 @@ interface ImageMachineFrameProps {
   creditsContent: ReactNode;
 }
 
-/**
- * Renders a photorealistic machine frame image with interactive
- * elements (reels, buttons, winner text) positioned over it.
- *
- * The frame image should be an 800x1200 PNG with the reel area
- * either transparent or a solid dark color that the reels render over.
- */
 export default function ImageMachineFrame({
   skin,
   reelContent,
@@ -26,29 +18,23 @@ export default function ImageMachineFrame({
   buttonContent,
   creditsContent,
 }: ImageMachineFrameProps) {
-  const { frameImage, frameAspectRatio, overlayPositions } = skin;
+  const { frameImage, overlayPositions } = skin;
   const { reelWindow, winnerText, buttons } = overlayPositions;
 
   if (!frameImage) return null;
 
   return (
-    <div
-      className="relative w-full max-w-[420px] mx-auto"
-      style={{
-        aspectRatio: `${frameAspectRatio}`,
-      }}
-    >
-      {/* Machine frame image */}
-      <Image
+    <div className="relative w-full max-w-[420px] mx-auto">
+      {/* Machine frame image — drives the container size */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={frameImage}
         alt={`${skin.label} slot machine`}
-        fill
-        className="object-contain pointer-events-none select-none"
-        priority
-        sizes="420px"
+        className="w-full h-auto block pointer-events-none select-none"
+        draggable={false}
       />
 
-      {/* Reel window overlay — positioned exactly over the reel area in the image */}
+      {/* Reel window overlay — positioned over the reel area in the image */}
       <div
         className="absolute overflow-hidden"
         style={{
@@ -65,10 +51,10 @@ export default function ImageMachineFrame({
       <div
         className="absolute flex items-center justify-center"
         style={{
-          top: `${reelWindow.top - 5}%`,
+          top: `${reelWindow.top - 4}%`,
           left: `${reelWindow.left}%`,
           width: `${reelWindow.width}%`,
-          height: "4%",
+          height: "3%",
         }}
       >
         {creditsContent}
@@ -81,7 +67,7 @@ export default function ImageMachineFrame({
           top: `${winnerText.top}%`,
           left: `${winnerText.left}%`,
           width: `${winnerText.width}%`,
-          height: "8%",
+          height: "7%",
         }}
       >
         {winnerContent}
@@ -94,7 +80,7 @@ export default function ImageMachineFrame({
           top: `${buttons.top}%`,
           left: `${buttons.left}%`,
           width: `${buttons.width}%`,
-          height: "8%",
+          height: "7%",
         }}
       >
         {buttonContent}

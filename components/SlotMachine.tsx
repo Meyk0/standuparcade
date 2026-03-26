@@ -44,7 +44,7 @@ export default function SlotMachine({
 }: SlotMachineProps) {
   const [winnerRevealed, setWinnerRevealed] = useState(false);
 
-  const skin = SKINS[skinName];
+  const skin = SKINS[skinName] || SKINS.arcade;
   const useImageFrame = !!skin.frameImage;
 
   const names = members.map((m) => m.name.toUpperCase());
