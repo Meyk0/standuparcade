@@ -67,9 +67,14 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     description: "Classic 80s casino — chrome & gold",
     font: "'Press Start 2P', monospace",
     fontUrl: "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
-    frameImage: null, // Set to "/machines/arcade.png" when image is ready
-    frameAspectRatio: 2 / 3,
-    overlayPositions: DEFAULT_OVERLAY,
+    frameImage: "/machines/arcade.png",
+    frameAspectRatio: 1696 / 2528,
+    overlayPositions: {
+      reelWindow: { top: 35, left: 15, width: 70, height: 27 },
+      winnerText: { top: 63, left: 10, width: 80 },
+      buttons: { top: 71, left: 15, width: 70 },
+      handle: null,
+    },
   },
   synthwave: {
     name: "synthwave",

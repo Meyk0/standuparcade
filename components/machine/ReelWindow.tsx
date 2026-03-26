@@ -8,6 +8,7 @@ interface ReelWindowProps {
   winnerName: string;
   status: "idle" | "spinning" | "winner";
   onAllReelsStopped: () => void;
+  fillContainer?: boolean;
 }
 
 const REEL_STOP_DELAYS = [1500, 2000, 2500];
@@ -17,6 +18,7 @@ export default function ReelWindow({
   winnerName,
   status,
   onAllReelsStopped,
+  fillContainer = false,
 }: ReelWindowProps) {
   const [reelStatuses, setReelStatuses] = useState<
     ("idle" | "spinning" | "stopping" | "stopped")[]
@@ -82,12 +84,12 @@ export default function ReelWindow({
   const windowHeight = VISIBLE_ROWS * ROW_HEIGHT;
 
   return (
-    <div className="relative">
+    <div className={`relative ${fillContainer ? "h-full" : ""}`}>
       <div
-        className="machine-reel-bg relative rounded-lg overflow-hidden"
+        className={`machine-reel-bg relative overflow-hidden ${fillContainer ? "h-full" : "rounded-lg"}`}
         style={{
-          height: windowHeight,
-          boxShadow: "inset 0 4px 12px rgba(0,0,0,0.6), inset 0 -4px 12px rgba(0,0,0,0.4)",
+          ...(!fillContainer ? { height: windowHeight } : {}),
+          boxShadow: fillContainer ? "none" : "inset 0 4px 12px rgba(0,0,0,0.6), inset 0 -4px 12px rgba(0,0,0,0.4)",
         }}
       >
         {/* Three reel columns */}

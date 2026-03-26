@@ -69,13 +69,14 @@ export default function SlotMachine({
   const isWinner = status === "winner";
   const handleDisabled = isSpinning || isWinner || poolEmpty;
 
-  // Shared reel content
-  const reelContent = (
+  // Reel content — fillContainer mode for image frames
+  const makeReelContent = (fill: boolean) => (
     <ReelWindow
       names={names.length > 0 ? names : ["???"]}
       winnerName={winnerName}
       status={status}
       onAllReelsStopped={handleAllReelsStopped}
+      fillContainer={fill}
     />
   );
 
@@ -160,7 +161,7 @@ export default function SlotMachine({
              ========================================== */
           <ImageMachineFrame
             skin={skin}
-            reelContent={reelContent}
+            reelContent={makeReelContent(true)}
             winnerContent={winnerContent}
             buttonContent={buttonContent}
             creditsContent={creditsContent}
@@ -175,7 +176,7 @@ export default function SlotMachine({
             <MachineMarquee teamName={teamName} isSpinning={isSpinning} />
 
             <MachineBody total={total} remaining={remaining}>
-              {reelContent}
+              {makeReelContent(false)}
             </MachineBody>
 
             {/* Winner area — fixed height to prevent layout shift */}
