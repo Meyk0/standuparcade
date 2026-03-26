@@ -10,8 +10,7 @@ interface ReelWindowProps {
   onAllReelsStopped: () => void;
 }
 
-// Stagger timing: each reel stops after a delay
-const REEL_STOP_DELAYS = [1500, 2000, 2500]; // ms after spin starts
+const REEL_STOP_DELAYS = [1500, 2000, 2500];
 
 export default function ReelWindow({
   names,
@@ -24,47 +23,56 @@ export default function ReelWindow({
   >(["idle", "idle", "idle"]);
   const stoppedCountRef = useRef(0);
   const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const hasCalledStoppedRef = useRef(false);
+  const prevStatusRef = useRef(status);
 
   const clearTimers = useCallback(() => {
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
   }, []);
 
-  // Start spinning all reels
   useEffect(() => {
-    if (status === "spinning") {
+    const prevStatus = prevStatusRef.current;
+    prevStatusRef.current = status;
+
+    if (status === "spinning" && prevStatus !== "spinning") {
+      // Starting a new spin
+      clearTimers();
       stoppedCountRef.current = 0;
+      hasCalledStoppedRef.current = false;
       setReelStatuses(["spinning", "spinning", "spinning"]);
 
-      // Schedule staggered stops
       const timers = REEL_STOP_DELAYS.map((delay, index) =>
         setTimeout(() => {
           setReelStatuses((prev) => {
-            const next = [...prev];
+            const next = [...prev] as ("idle" | "spinning" | "stopping" | "stopped")[];
             next[index] = "stopping";
-            return next as ("idle" | "spinning" | "stopping" | "stopped")[];
+            return next;
           });
         }, delay)
       );
       timersRef.current = timers;
-    } else if (status === "idle") {
+    } else if (status === "idle" && prevStatus !== "idle") {
+      // Resetting
       clearTimers();
       stoppedCountRef.current = 0;
+      hasCalledStoppedRef.current = false;
       setReelStatuses(["idle", "idle", "idle"]);
     }
+    // "winner" status: don't change anything, reels stay in their stopped state
   }, [status, clearTimers]);
 
-  // Handle individual reel stop events
   const handleReelStopped = useCallback(
     (reelIndex: number) => {
       setReelStatuses((prev) => {
-        const next = [...prev];
+        const next = [...prev] as ("idle" | "spinning" | "stopping" | "stopped")[];
         next[reelIndex] = "stopped";
-        return next as ("idle" | "spinning" | "stopping" | "stopped")[];
+        return next;
       });
 
       stoppedCountRef.current += 1;
-      if (stoppedCountRef.current >= 3) {
+      if (stoppedCountRef.current >= 3 && !hasCalledStoppedRef.current) {
+        hasCalledStoppedRef.current = true;
         onAllReelsStopped();
       }
     },
@@ -75,7 +83,6 @@ export default function ReelWindow({
 
   return (
     <div className="relative">
-      {/* Reel frame */}
       <div
         className="relative rounded-lg overflow-hidden"
         style={{

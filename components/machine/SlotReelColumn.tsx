@@ -1,26 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 interface SlotReelColumnProps {
   names: string[];
   winnerName: string;
-  reelIndex: number; // 0, 1, 2 for stagger timing
+  reelIndex: number;
   status: "idle" | "spinning" | "stopping" | "stopped";
   onStopped?: () => void;
 }
 
-const ROW_HEIGHT = 64; // px per name row
-const VISIBLE_ROWS = 3; // names visible in the window
-
-function shuffleArray<T>(arr: T[]): T[] {
-  const shuffled = [...arr];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
+const ROW_HEIGHT = 64;
+const VISIBLE_ROWS = 3;
 
 export default function SlotReelColumn({
   names,
@@ -28,202 +19,216 @@ export default function SlotReelColumn({
   status,
   onStopped,
 }: SlotReelColumnProps) {
-  const stripRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
-  const positionRef = useRef(0);
-  const velocityRef = useRef(0);
+  const posRef = useRef(0);
+  const phaseRef = useRef<"idle" | "spinning" | "decelerating" | "stopped">("idle");
+  const [displayItems, setDisplayItems] = useState<string[]>(["???", "???", "???"]);
   const [translateY, setTranslateY] = useState(0);
-  const [phase, setPhase] = useState<"idle" | "spinning" | "decelerating" | "stopped">("idle");
+  const [isIdle, setIsIdle] = useState(true);
+  const [highlightCenter, setHighlightCenter] = useState(false);
+  const namesRef = useRef(names);
+  const winnerRef = useRef(winnerName);
 
-  // Build the name strip: repeated shuffled names with winner at a known target position
-  const { strip, targetIndex } = useMemo(() => {
-    if (names.length === 0) return { strip: ["???"], targetIndex: 0 };
-
-    const repeats = Math.max(3, Math.ceil(30 / names.length));
-    const segments: string[] = [];
-
-    for (let i = 0; i < repeats; i++) {
-      segments.push(...shuffleArray(names));
-    }
-
-    // Place winner near the end so there's enough runway to spin through
-    const targetIdx = segments.length - Math.floor(names.length / 2) - 1;
-    segments[targetIdx] = winnerName;
-
-    // Ensure neighbors aren't also the winner (for visual clarity)
-    if (segments[targetIdx - 1] === winnerName && names.length > 1) {
-      const alt = names.find((n) => n !== winnerName) || names[0];
-      segments[targetIdx - 1] = alt;
-    }
-    if (segments[targetIdx + 1] === winnerName && names.length > 1) {
-      const alt = names.find((n) => n !== winnerName) || names[0];
-      segments[targetIdx + 1] = alt;
-    }
-
-    return { strip: segments, targetIndex: targetIdx };
+  // Keep refs in sync
+  useEffect(() => {
+    namesRef.current = names;
+    winnerRef.current = winnerName;
   }, [names, winnerName]);
 
-  // Target Y position: winner should be in the center row
-  const targetY = useMemo(() => {
-    return -(targetIndex - 1) * ROW_HEIGHT;
-  }, [targetIndex]);
+  const stopAnimation = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
 
-  // Reset to idle display
-  const resetToIdle = useCallback(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    positionRef.current = 0;
-    velocityRef.current = 0;
-    setTranslateY(0);
-    setPhase("idle");
+  // Build a long strip for spinning display
+  const buildSpinStrip = useCallback(() => {
+    const allNames = namesRef.current.length > 0 ? namesRef.current : ["???"];
+    const strip: string[] = [];
+    // Build a strip of ~40 items for smooth scrolling
+    const count = Math.max(40, allNames.length * 5);
+    for (let i = 0; i < count; i++) {
+      strip.push(allNames[i % allNames.length]);
+    }
+    return strip;
   }, []);
 
   // Start fast spinning
   const startSpinning = useCallback(() => {
-    setPhase("spinning");
-    const speed = -ROW_HEIGHT * 12; // pixels per second (fast)
-    velocityRef.current = speed;
-    positionRef.current = 0;
+    stopAnimation();
+    phaseRef.current = "spinning";
+    setIsIdle(false);
+    setHighlightCenter(false);
 
+    const strip = buildSpinStrip();
+    setDisplayItems(strip);
+
+    posRef.current = 0;
     let lastTime = performance.now();
-    const totalStripHeight = strip.length * ROW_HEIGHT;
+    const speed = -ROW_HEIGHT * 14; // px/sec
 
     const animate = (time: number) => {
+      if (phaseRef.current !== "spinning") return;
+
       const dt = (time - lastTime) / 1000;
       lastTime = time;
 
-      positionRef.current += velocityRef.current * dt;
+      posRef.current += speed * dt;
 
-      // Wrap around to create infinite scroll effect
-      if (positionRef.current < -totalStripHeight + VISIBLE_ROWS * ROW_HEIGHT) {
-        positionRef.current += totalStripHeight / 2;
+      // Wrap around seamlessly
+      const stripHeight = strip.length * ROW_HEIGHT;
+      const wrapPoint = -stripHeight / 2;
+      if (posRef.current < wrapPoint) {
+        posRef.current += stripHeight / 2;
       }
 
-      setTranslateY(positionRef.current);
+      setTranslateY(posRef.current);
       rafRef.current = requestAnimationFrame(animate);
     };
 
     rafRef.current = requestAnimationFrame(animate);
-  }, [strip.length]);
+  }, [stopAnimation, buildSpinStrip]);
 
-  // Decelerate to target
+  // Decelerate and land on winner
   const startDecelerating = useCallback(() => {
-    setPhase("decelerating");
+    stopAnimation();
+    phaseRef.current = "decelerating";
 
-    const startPos = positionRef.current;
+    const winner = winnerRef.current;
+    const allNames = namesRef.current.length > 0 ? namesRef.current : ["???"];
+
+    // Build the final landing strip: [neighbor above, WINNER, neighbor below]
+    // Plus extra items above for the deceleration runway
+    const finalStrip: string[] = [];
+    const runwayLength = 15; // names to scroll through during decel
+
+    // Pick random non-winner names for the runway
+    const others = allNames.filter((n) => n !== winner);
+    const pool = others.length > 0 ? others : allNames;
+    for (let i = 0; i < runwayLength; i++) {
+      finalStrip.push(pool[Math.floor(Math.random() * pool.length)]);
+    }
+
+    // Add the final 3 visible names: [above, WINNER, below]
+    finalStrip.push(pool[Math.floor(Math.random() * pool.length)]); // above
+    finalStrip.push(winner); // center (this is the target)
+    finalStrip.push(pool[Math.floor(Math.random() * pool.length)]); // below
+
+    setDisplayItems(finalStrip);
+
+    // Target: winner should be in center row (index = runwayLength + 1)
+    // translateY = -(winnerIndex - 1) * ROW_HEIGHT to show it in center
+    const winnerIndex = runwayLength + 1;
+    const targetTranslateY = -(winnerIndex - 1) * ROW_HEIGHT;
+
+    // Start from top of the strip (scrolling down through runway)
+    const startY = 0;
+    posRef.current = startY;
+    setTranslateY(startY);
+
     const startTime = performance.now();
-    const duration = 800; // ms for deceleration
-
-    // Ensure we travel enough distance and land on target
-    // Adjust target to be "below" current position (continuing scroll direction)
-    let adjustedTarget = targetY;
-    while (adjustedTarget > startPos) {
-      adjustedTarget -= strip.length * ROW_HEIGHT;
-    }
-    // Make sure we travel at least one full strip cycle for dramatic effect
-    if (startPos - adjustedTarget < 5 * ROW_HEIGHT) {
-      adjustedTarget -= Math.ceil(names.length) * ROW_HEIGHT;
-    }
-
-    const distance = adjustedTarget - startPos;
+    const duration = 800;
+    const totalDistance = targetTranslateY - startY;
 
     const animate = (time: number) => {
+      if (phaseRef.current !== "decelerating") return;
+
       const elapsed = time - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      // Cubic ease-out with slight overshoot
+      // Cubic ease-out
       const eased = 1 - Math.pow(1 - progress, 3);
 
-      // Add bounce at the end
+      // Subtle bounce near end
       let bounce = 0;
-      if (progress > 0.85) {
-        const bounceProgress = (progress - 0.85) / 0.15;
-        bounce = Math.sin(bounceProgress * Math.PI) * ROW_HEIGHT * 0.15;
+      if (progress > 0.8) {
+        const bounceT = (progress - 0.8) / 0.2;
+        bounce = Math.sin(bounceT * Math.PI) * ROW_HEIGHT * 0.12;
       }
 
-      const currentPos = startPos + distance * eased + bounce;
-      positionRef.current = currentPos;
-      setTranslateY(currentPos);
+      const currentY = startY + totalDistance * eased + bounce;
+      posRef.current = currentY;
+      setTranslateY(currentY);
 
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(animate);
       } else {
-        // Snap exactly to target
-        positionRef.current = adjustedTarget;
-        setTranslateY(adjustedTarget);
-        setPhase("stopped");
+        // Snap to exact target
+        posRef.current = targetTranslateY;
+        setTranslateY(targetTranslateY);
+        phaseRef.current = "stopped";
+        setHighlightCenter(true);
         onStopped?.();
       }
     };
 
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(animate);
-  }, [targetY, strip.length, names.length, onStopped]);
+  }, [stopAnimation, onStopped]);
+
+  // Reset to idle
+  const resetToIdle = useCallback(() => {
+    stopAnimation();
+    phaseRef.current = "idle";
+    posRef.current = 0;
+    setTranslateY(0);
+    setDisplayItems(["???", "???", "???"]);
+    setIsIdle(true);
+    setHighlightCenter(false);
+  }, [stopAnimation]);
 
   // React to status changes
   useEffect(() => {
-    if (status === "spinning" && phase === "idle") {
+    if (status === "spinning" && phaseRef.current !== "spinning") {
       startSpinning();
-    } else if (status === "stopping" && phase === "spinning") {
+    } else if (status === "stopping" && phaseRef.current === "spinning") {
       startDecelerating();
-    } else if (status === "idle") {
+    } else if (status === "idle" && phaseRef.current !== "idle") {
       resetToIdle();
     }
-  }, [status, phase, startSpinning, startDecelerating, resetToIdle]);
+  }, [status, startSpinning, startDecelerating, resetToIdle]);
 
-  // Cleanup
+  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  // Idle display: show "???" centered
-  const idleStrip = ["???", "???", "???"];
+    return stopAnimation;
+  }, [stopAnimation]);
 
   return (
     <div
       className="relative overflow-hidden"
       style={{ height: VISIBLE_ROWS * ROW_HEIGHT }}
     >
-      {/* Winner line indicator */}
-      <div
-        className="absolute left-0 right-0 z-10 pointer-events-none border-t-2 border-b-2"
-        style={{
-          top: ROW_HEIGHT,
-          height: ROW_HEIGHT,
-          borderColor: "var(--reel-winner-line, var(--skin-accent))",
-        }}
-      />
-
       {/* Name strip */}
       <div
-        ref={stripRef}
         className="will-change-transform"
         style={{
-          transform: `translateY(${phase === "idle" ? 0 : translateY}px)`,
+          transform: `translateY(${isIdle ? 0 : translateY}px)`,
         }}
       >
-        {(phase === "idle" ? idleStrip : strip).map((name, i) => (
-          <div
-            key={`${i}-${name}`}
-            className="flex items-center justify-center font-bold uppercase tracking-wider"
-            style={{
-              height: ROW_HEIGHT,
-              fontSize: name.length > 10 ? "0.75rem" : name.length > 7 ? "0.875rem" : "1.1rem",
-              color:
-                phase === "stopped" &&
-                i === targetIndex
+        {displayItems.map((name, i) => {
+          // Determine if this item is the winner in the center
+          const isWinnerItem = highlightCenter && name === winnerRef.current &&
+            Math.abs(posRef.current + (i - 1) * ROW_HEIGHT) < ROW_HEIGHT * 0.5;
+
+          return (
+            <div
+              key={`${i}-${name}`}
+              className="flex items-center justify-center font-bold uppercase tracking-wider"
+              style={{
+                height: ROW_HEIGHT,
+                fontSize: name.length > 10 ? "0.75rem" : name.length > 7 ? "0.875rem" : "1.1rem",
+                color: isWinnerItem
                   ? "var(--skin-accent)"
                   : "var(--reel-text, var(--skin-text))",
-              textShadow:
-                phase === "stopped" && i === targetIndex
+                textShadow: isWinnerItem
                   ? "0 0 10px var(--skin-accent)"
                   : "none",
-            }}
-          >
-            <span className="truncate max-w-[140px] px-2">{name}</span>
-          </div>
-        ))}
+              }}
+            >
+              <span className="truncate max-w-[140px] px-2">{name}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
