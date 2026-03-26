@@ -46,7 +46,7 @@ export default function MachineBase({
         ) : status === "winner" ? (
           <>
             <MachineButton
-              label="NEXT"
+              label="CONFIRM & NEXT"
               variant="primary"
               onClick={onNext}
             />

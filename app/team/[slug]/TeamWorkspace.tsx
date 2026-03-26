@@ -161,14 +161,21 @@ export default function TeamWorkspace({
       .eq("team_id", team.id);
   }, [supabase, team.id]);
 
-  // Confirm / Next
+  // Confirm / Next — fetch fresh session to avoid stale state
   const handleNext = async () => {
-    if (!session?.current_winner) return;
+    // Read latest session state from DB to avoid stale local state
+    const { data: freshSession } = await supabase
+      .from("session_state")
+      .select("*")
+      .eq("team_id", team.id)
+      .single();
 
-    const newPool = session.spin_pool.filter(
-      (id) => id !== session.current_winner
+    if (!freshSession?.current_winner) return;
+
+    const newPool = (freshSession.spin_pool || []).filter(
+      (id: string) => id !== freshSession.current_winner
     );
-    const newOrder = [...(session.order_picked || []), session.current_winner];
+    const newOrder = [...(freshSession.order_picked || []), freshSession.current_winner];
 
     await supabase
       .from("session_state")

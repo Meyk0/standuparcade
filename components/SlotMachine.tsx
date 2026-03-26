@@ -58,6 +58,9 @@ export default function SlotMachine({
   }, [onNext]);
 
   const isSpinning = status === "spinning";
+  const isWinner = status === "winner";
+  // Handle can only be pulled when idle and pool is not empty
+  const handleDisabled = isSpinning || isWinner || poolEmpty;
 
   return (
     <div className="flex items-start justify-center gap-0">
@@ -89,23 +92,31 @@ export default function SlotMachine({
             />
           </MachineBody>
 
-          {/* Winner tagline display */}
-          {status === "winner" && currentWinner?.tagline && winnerRevealed && (
+          {/* Winner announcement */}
+          {isWinner && currentWinner && winnerRevealed && (
             <div
-              className="text-center py-2 px-4"
+              className="text-center py-3 px-4"
               style={{
                 background: "var(--machine-body-bg, linear-gradient(180deg, #a0a0a0, #808080))",
               }}
             >
-              <span
-                className="text-xs sm:text-sm italic font-bold tracking-wider animate-winner-flash"
+              <div
+                className="text-base sm:text-lg font-bold uppercase tracking-wider animate-winner-flash mb-1"
                 style={{
                   color: "var(--skin-accent)",
                   textShadow: "0 0 10px var(--skin-accent)",
                 }}
               >
-                {currentWinner.tagline}
-              </span>
+                {currentWinner.name} — YOU&apos;RE UP!
+              </div>
+              {currentWinner.tagline && (
+                <span
+                  className="text-xs sm:text-sm italic"
+                  style={{ color: "var(--reel-text, var(--skin-text))" }}
+                >
+                  {currentWinner.tagline}
+                </span>
+              )}
             </div>
           )}
 
@@ -123,7 +134,7 @@ export default function SlotMachine({
       {/* Pull handle (right side) */}
       <div className="hidden sm:flex items-center pt-20">
         <PullHandle
-          disabled={isSpinning || (poolEmpty && status !== "winner")}
+          disabled={handleDisabled}
           onPull={handleSpin}
         />
       </div>
@@ -131,7 +142,7 @@ export default function SlotMachine({
       {/* Mobile pull button (below machine on small screens) */}
       <button
         onClick={handleSpin}
-        disabled={isSpinning || (poolEmpty && status !== "winner")}
+        disabled={handleDisabled}
         className="sm:hidden fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full font-bold text-xs uppercase tracking-wider transition-all active:scale-90 disabled:opacity-40"
         style={{
           background: "var(--handle-ball, radial-gradient(circle at 35% 35%, #ff6666, #cc0000 50%, #880000))",
