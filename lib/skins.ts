@@ -72,7 +72,7 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     overlayPositions: {
       reelWindow: { top: 38, left: 18, width: 64, height: 13 },
       winnerText: { top: 52, left: 15, width: 70 },
-      buttons: { top: 56, left: 20, width: 60 },
+      buttons: { top: 68, left: 15, width: 70 },
       handle: null,
     },
   },

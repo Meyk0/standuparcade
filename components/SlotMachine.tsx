@@ -148,7 +148,7 @@ export default function SlotMachine({
   );
 
   return (
-    <div className="flex items-start justify-center gap-0">
+    <div className="relative flex items-start justify-center">
       <div
         className="relative w-full max-w-[420px]"
         style={{ filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.6))" }}
@@ -201,7 +201,13 @@ export default function SlotMachine({
       </div>
 
       {/* Pull handle (right side, desktop only) */}
-      <div className="hidden sm:flex items-start" style={{ paddingTop: useImageFrame ? "38%" : "80px" }}>
+      <div
+        className="hidden sm:block absolute"
+        style={{
+          right: "-44px",
+          top: useImageFrame ? "38%" : "120px",
+        }}
+      >
         <PullHandle disabled={handleDisabled} onPull={handleSpin} />
       </div>
 

@@ -34,7 +34,7 @@ export default function ImageMachineFrame({
         draggable={false}
       />
 
-      {/* Reel window overlay — positioned over the reel area in the image */}
+      {/* Reel window overlay — solid bg covers the image's own reel content */}
       <div
         className="absolute overflow-hidden"
         style={{
@@ -42,6 +42,7 @@ export default function ImageMachineFrame({
           left: `${reelWindow.left}%`,
           width: `${reelWindow.width}%`,
           height: `${reelWindow.height}%`,
+          background: "#0a0a0a",
         }}
       >
         {reelContent}
