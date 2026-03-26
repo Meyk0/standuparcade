@@ -182,7 +182,7 @@ export default function TeamWorkspace({
     }
   }, [team.slug]);
 
-  // Spin action — pick winner, write spinning state
+  // Spin action — optimistic local update + DB write
   const handleSpin = async () => {
     if (!session || availableMembers.length === 0) return;
 
@@ -192,21 +192,38 @@ export default function TeamWorkspace({
 
     const winnerId = pool[Math.floor(Math.random() * pool.length)];
 
+    const updatedSession = {
+      ...session,
+      status: "spinning" as const,
+      current_winner: winnerId,
+      spin_pool: pool,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Update locally FIRST (don't wait for Realtime)
+    setSession(updatedSession);
+
+    // Then persist to DB
     await supabase
       .from("session_state")
       .update({
         status: "spinning",
         current_winner: winnerId,
         spin_pool: pool,
-        updated_at: new Date().toISOString(),
+        updated_at: updatedSession.updated_at,
       })
       .eq("team_id", team.id);
   };
 
   // Called by SlotMachine when all 3 reels have stopped.
-  // Shows winner for 2s then auto-confirms (adds to order, returns to idle).
+  // Shows winner for 2s then auto-confirms.
   const handleAnimationComplete = useCallback(async () => {
-    // Brief "winner" state to show the name
+    // Show winner state locally
+    setSession((prev) =>
+      prev ? { ...prev, status: "winner" as const } : prev
+    );
+
+    // Persist winner state
     await supabase
       .from("session_state")
       .update({
@@ -230,6 +247,19 @@ export default function TeamWorkspace({
       );
       const newOrder = [...(freshSession.order_picked || []), freshSession.current_winner];
 
+      const idleSession = {
+        ...freshSession,
+        status: "idle" as const,
+        spin_pool: newPool,
+        order_picked: newOrder,
+        current_winner: null,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Update locally first
+      setSession(idleSession);
+
+      // Then persist
       await supabase
         .from("session_state")
         .update({
@@ -237,7 +267,7 @@ export default function TeamWorkspace({
           spin_pool: newPool,
           order_picked: newOrder,
           current_winner: null,
-          updated_at: new Date().toISOString(),
+          updated_at: idleSession.updated_at,
         })
         .eq("team_id", team.id);
     }, 2000);
