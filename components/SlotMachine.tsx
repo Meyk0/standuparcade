@@ -69,10 +69,8 @@ export default function SlotMachine({
 
   return (
     <div className="relative flex items-start justify-center">
-      <div
-        className="relative w-full max-w-[420px]"
-        style={{ filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.6))" }}
-      >
+      {/* Machine container */}
+      <div className="relative w-full max-w-[420px]">
         {/* Marquee — sits above the machine body, full width */}
         <MachineMarquee
           teamName={teamName}
@@ -146,14 +144,14 @@ export default function SlotMachine({
             ← HOME
           </Link>
         </div>
+      </div>
 
-        {/* Pull handle (desktop, absolutely positioned) */}
-        <div
-          className="hidden sm:block absolute"
-          style={{ right: "-44px", top: "120px" }}
-        >
-          <PullHandle disabled={handleDisabled} onPull={handleSpin} />
-        </div>
+      {/* Pull handle (desktop) — outside the machine container so filter can't clip it */}
+      <div
+        className="hidden sm:block flex-shrink-0"
+        style={{ marginTop: "140px" }}
+      >
+        <PullHandle disabled={handleDisabled} onPull={handleSpin} />
       </div>
 
       {/* Mobile pull button */}
