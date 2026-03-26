@@ -3,7 +3,6 @@
 interface MachineBaseProps {
   status: "idle" | "spinning" | "winner";
   poolEmpty: boolean;
-  onNext: () => void;
   onReset: () => void;
   onNewSession: () => void;
 }
@@ -11,7 +10,6 @@ interface MachineBaseProps {
 export default function MachineBase({
   status,
   poolEmpty,
-  onNext,
   onReset,
   onNewSession,
 }: MachineBaseProps) {
@@ -28,35 +26,38 @@ export default function MachineBase({
         }}
       />
 
-      {/* Action buttons */}
+      {/* Action area */}
       <div className="flex justify-center gap-3">
-        {poolEmpty && status !== "winner" ? (
+        {poolEmpty && status === "idle" ? (
           <MachineButton
             label="NEW SESSION"
             variant="primary"
             onClick={onNewSession}
           />
-        ) : status === "winner" ? (
-          <>
-            <MachineButton
-              label="CONFIRM & NEXT"
-              variant="primary"
-              onClick={onNext}
-            />
-            <MachineButton
-              label="RESET"
-              variant="secondary"
-              onClick={onReset}
-            />
-          </>
         ) : (
-          <div className="text-center py-2">
+          <div className="text-center py-2 flex items-center gap-3">
             <span
               className="text-[10px] uppercase tracking-[0.2em]"
               style={{ color: "var(--machine-label-color)" }}
             >
-              {status === "spinning" ? "★ SPINNING ★" : "PULL TO SPIN"}
+              {status === "spinning"
+                ? "★ SPINNING ★"
+                : status === "winner"
+                  ? "★ WINNER ★"
+                  : "PULL TO SPIN"}
             </span>
+            {status === "idle" && !poolEmpty && (
+              <button
+                onClick={onReset}
+                className="text-[9px] uppercase tracking-wider px-2 py-1 rounded opacity-50 hover:opacity-100 transition-opacity"
+                style={{
+                  color: "var(--machine-label-color)",
+                  border: "1px solid var(--machine-label-color)",
+                }}
+              >
+                RESET
+              </button>
+            )}
           </div>
         )}
       </div>

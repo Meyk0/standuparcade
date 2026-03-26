@@ -20,7 +20,6 @@ interface SlotMachineProps {
   total: number;
   remaining: number;
   onSpin: () => void;
-  onNext: () => void;
   onReset: () => void;
   onNewSession: () => void;
   onAnimationComplete: () => void;
@@ -36,7 +35,6 @@ export default function SlotMachine({
   total,
   remaining,
   onSpin,
-  onNext,
   onReset,
   onNewSession,
   onAnimationComplete,
@@ -58,13 +56,9 @@ export default function SlotMachine({
     onSpin();
   }, [onSpin]);
 
-  const handleNext = useCallback(() => {
-    setWinnerRevealed(false);
-    onNext();
-  }, [onNext]);
-
   const isSpinning = status === "spinning";
   const isWinner = status === "winner";
+  // Disabled during spin, winner reveal (auto-confirms after 2s), or all picked
   const handleDisabled = isSpinning || isWinner || poolEmpty;
 
   return (
@@ -128,7 +122,6 @@ export default function SlotMachine({
           <MachineBase
             status={poolEmpty && status !== "winner" ? "idle" : status}
             poolEmpty={poolEmpty}
-            onNext={handleNext}
             onReset={onReset}
             onNewSession={onNewSession}
           />

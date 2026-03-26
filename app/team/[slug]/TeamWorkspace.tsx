@@ -79,10 +79,30 @@ export default function TeamWorkspace({
   }, [supabase, team.id]);
 
   // Fetch fresh data on mount
+  // Fetch fresh data on mount + reset any stuck spinning/winner states
   useEffect(() => {
     fetchMembers();
-    fetchSession();
     fetchTeam();
+    // Fetch session and reset if stuck in spinning/winner state
+    (async () => {
+      const { data } = await supabase
+        .from("session_state")
+        .select("*")
+        .eq("team_id", initialTeam.id)
+        .single();
+      if (data) {
+        if (data.status === "spinning" || data.status === "winner") {
+          // Reset stuck session to idle
+          await supabase
+            .from("session_state")
+            .update({ status: "idle", current_winner: null, updated_at: new Date().toISOString() })
+            .eq("team_id", initialTeam.id);
+          data.status = "idle";
+          data.current_winner = null;
+        }
+        setSession(data);
+      }
+    })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Subscribe to realtime updates
@@ -150,8 +170,10 @@ export default function TeamWorkspace({
       .eq("team_id", team.id);
   };
 
-  // Called by SlotMachine when all 3 reels have stopped
+  // Called by SlotMachine when all 3 reels have stopped.
+  // Shows winner for 2s then auto-confirms (adds to order, returns to idle).
   const handleAnimationComplete = useCallback(async () => {
+    // Brief "winner" state to show the name
     await supabase
       .from("session_state")
       .update({
@@ -159,35 +181,34 @@ export default function TeamWorkspace({
         updated_at: new Date().toISOString(),
       })
       .eq("team_id", team.id);
+
+    // Auto-confirm after 2 seconds
+    setTimeout(async () => {
+      const { data: freshSession } = await supabase
+        .from("session_state")
+        .select("*")
+        .eq("team_id", team.id)
+        .single();
+
+      if (!freshSession?.current_winner) return;
+
+      const newPool = (freshSession.spin_pool || []).filter(
+        (id: string) => id !== freshSession.current_winner
+      );
+      const newOrder = [...(freshSession.order_picked || []), freshSession.current_winner];
+
+      await supabase
+        .from("session_state")
+        .update({
+          status: "idle",
+          spin_pool: newPool,
+          order_picked: newOrder,
+          current_winner: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("team_id", team.id);
+    }, 2000);
   }, [supabase, team.id]);
-
-  // Confirm / Next — fetch fresh session to avoid stale state
-  const handleNext = async () => {
-    // Read latest session state from DB to avoid stale local state
-    const { data: freshSession } = await supabase
-      .from("session_state")
-      .select("*")
-      .eq("team_id", team.id)
-      .single();
-
-    if (!freshSession?.current_winner) return;
-
-    const newPool = (freshSession.spin_pool || []).filter(
-      (id: string) => id !== freshSession.current_winner
-    );
-    const newOrder = [...(freshSession.order_picked || []), freshSession.current_winner];
-
-    await supabase
-      .from("session_state")
-      .update({
-        status: "idle",
-        spin_pool: newPool,
-        order_picked: newOrder,
-        current_winner: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("team_id", team.id);
-  };
 
   // Reset session
   const handleReset = async () => {
@@ -310,7 +331,6 @@ export default function TeamWorkspace({
                 total={availableMembers.length}
                 remaining={session?.spin_pool?.length ?? availableMembers.length}
                 onSpin={handleSpin}
-                onNext={handleNext}
                 onReset={handleReset}
                 onNewSession={handleNewSession}
                 onAnimationComplete={handleAnimationComplete}
