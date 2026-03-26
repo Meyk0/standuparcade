@@ -214,16 +214,18 @@ export default function SlotReelColumn({
           return (
             <div
               key={`${i}-${item}`}
-              className="flex items-center justify-center font-bold uppercase tracking-wider"
+              className="flex items-center justify-center font-bold uppercase"
               style={{
                 height: ROW_HEIGHT,
                 fontSize: sym
-                  ? "1.8rem"
-                  : item.length > 10
-                    ? "0.75rem"
-                    : item.length > 7
-                      ? "0.875rem"
-                      : "1.1rem",
+                  ? "1.5rem"
+                  : item.length > 12
+                    ? "0.55rem"
+                    : item.length > 8
+                      ? "0.65rem"
+                      : item.length > 5
+                        ? "0.75rem"
+                        : "0.85rem",
                 color: isWinnerItem
                   ? "var(--skin-accent)"
                   : "var(--reel-text, var(--skin-text))",
