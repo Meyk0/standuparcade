@@ -302,6 +302,7 @@ export default function TeamWorkspace({
             <div className="flex justify-center">
               <SlotMachine
                 teamName={team.name}
+                skinName={team.skin as SkinName}
                 members={availableMembers}
                 currentWinner={currentWinner}
                 status={allPicked && status !== "winner" ? "idle" : status}
