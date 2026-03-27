@@ -11,6 +11,7 @@ import MemberPool from "@/components/MemberPool";
 import OrderList from "@/components/OrderList";
 import OOOToggle from "@/components/OOOToggle";
 import { type SkinName, SKINS, SKIN_NAMES } from "@/lib/skins";
+import SkinBackground from "@/components/SkinBackground";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -334,6 +335,7 @@ export default function TeamWorkspace({
   return (
     <>
       <SkinProvider skin={team.skin as SkinName} />
+      <SkinBackground skinName={team.skin as SkinName} />
 
       <main className="min-h-screen p-4 sm:p-6">
         {/* Header */}

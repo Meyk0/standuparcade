@@ -8,6 +8,9 @@ export interface SkinDefinition {
   fontUrl: string;
   /** Path to a marquee/header image. Replaces the CSS marquee when set. */
   marqueeImage: string | null;
+  /** Background images for the game page. Null = use solid --skin-bg color. */
+  bgDesktop: string | null;
+  bgMobile: string | null;
 }
 
 export const SKINS: Record<SkinName, SkinDefinition> = {
@@ -18,6 +21,8 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Press Start 2P', monospace",
     fontUrl: "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
     marqueeImage: "/machines/classic-vegas-marquee.png",
+    bgDesktop: "/bg-desktop.jpg",
+    bgMobile: "/bg-mobile.jpg",
   },
   "lucky-dragon": {
     name: "lucky-dragon",
@@ -26,6 +31,8 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Orbitron', sans-serif",
     fontUrl: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap",
     marqueeImage: "/machines/lucky-dragon-marquee.png",
+    bgDesktop: null, // Set to "/bg/lucky-dragon-desktop.jpg" when ready
+    bgMobile: null,
   },
   pharaoh: {
     name: "pharaoh",
@@ -34,6 +41,8 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Cinzel', serif",
     fontUrl: "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap",
     marqueeImage: "/machines/pharaoh-marquee.png",
+    bgDesktop: null,
+    bgMobile: null,
   },
   "retro-arcade": {
     name: "retro-arcade",
@@ -42,6 +51,8 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Press Start 2P', monospace",
     fontUrl: "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
     marqueeImage: "/machines/retro-arcade-marquee.png",
+    bgDesktop: null,
+    bgMobile: null,
   },
   "fruit-machine": {
     name: "fruit-machine",
@@ -50,6 +61,8 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Patrick Hand', cursive",
     fontUrl: "https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap",
     marqueeImage: "/machines/fruit-machine-marquee.png",
+    bgDesktop: null,
+    bgMobile: null,
   },
 };
 
