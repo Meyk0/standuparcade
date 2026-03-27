@@ -9,13 +9,12 @@ interface SkinPickerProps {
   onSkinChange: (skin: SkinName) => void;
 }
 
-// Preview colors for each skin (to show in the picker)
 const SKIN_PREVIEW_COLORS: Record<SkinName, { bg: string; accent: string; text: string }> = {
-  arcade: { bg: "#0a0a0a", accent: "#33ff33", text: "#ffd700" },
-  synthwave: { bg: "#1a0533", accent: "#ff71ce", text: "#00ffff" },
-  noir: { bg: "#0d0d0d", accent: "#cc2222", text: "#d4d0c8" },
-  harajuku: { bg: "#ffe4ec", accent: "#b19cd9", text: "#4a2040" },
-  "pub-quiz": { bg: "#1b3a2d", accent: "#d4a843", text: "#e8e0d0" },
+  "classic-vegas": { bg: "#0a0808", accent: "#ffd700", text: "#e8d8b0" },
+  "lucky-dragon": { bg: "#1a0505", accent: "#ff2222", text: "#ffd700" },
+  pharaoh: { bg: "#0a0a18", accent: "#ffd700", text: "#e8d8a0" },
+  "retro-arcade": { bg: "#0a0a0a", accent: "#33ff33", text: "#33ff33" },
+  "fruit-machine": { bg: "#1b2a1d", accent: "#d4a843", text: "#e8e0d0" },
 };
 
 export default function SkinPicker({
@@ -33,7 +32,7 @@ export default function SkinPicker({
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-bold text-skin-accent uppercase tracking-wider">
-        Theme
+        Machine Type
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {SKIN_NAMES.map((skinName) => {

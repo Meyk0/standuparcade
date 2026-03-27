@@ -41,7 +41,7 @@ export default function SlotMachine({
 }: SlotMachineProps) {
   const [winnerRevealed, setWinnerRevealed] = useState(false);
 
-  const skin = SKINS[skinName] || SKINS.arcade;
+  const skin = SKINS[skinName] || SKINS["classic-vegas"];
 
   const names = members.map((m) => m.name.toUpperCase());
   const winnerName = currentWinner?.name.toUpperCase() || "???";

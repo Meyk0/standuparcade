@@ -12,7 +12,7 @@ create table teams (
   id          uuid primary key default uuid_generate_v4(),
   slug        text unique not null,
   name        text not null,
-  skin        text default 'arcade',
+  skin        text default 'classic-vegas',
   created_at  timestamptz default now()
 );
 

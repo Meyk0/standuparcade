@@ -1,4 +1,4 @@
-export type SkinName = "arcade" | "synthwave" | "noir" | "harajuku" | "pub-quiz";
+export type SkinName = "classic-vegas" | "lucky-dragon" | "pharaoh" | "retro-arcade" | "fruit-machine";
 
 export interface SkinDefinition {
   name: SkinName;
@@ -11,41 +11,41 @@ export interface SkinDefinition {
 }
 
 export const SKINS: Record<SkinName, SkinDefinition> = {
-  arcade: {
-    name: "arcade",
-    label: "Arcade",
-    description: "Classic 80s casino — chrome & gold",
+  "classic-vegas": {
+    name: "classic-vegas",
+    label: "Classic Vegas",
+    description: "Chrome & gold casino classic",
     font: "'Press Start 2P', monospace",
     fontUrl: "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
     marqueeImage: "/machines/arcade-marquee.png",
   },
-  synthwave: {
-    name: "synthwave",
-    label: "Synthwave",
-    description: "Neon LED modern machine",
+  "lucky-dragon": {
+    name: "lucky-dragon",
+    label: "Lucky Dragon",
+    description: "Macau casino — red, gold & jade",
     font: "'Orbitron', sans-serif",
     fontUrl: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap",
     marqueeImage: null,
   },
-  noir: {
-    name: "noir",
-    label: "Noir",
-    description: "Old-school one-armed bandit",
-    font: "'Special Elite', cursive",
-    fontUrl: "https://fonts.googleapis.com/css2?family=Special+Elite&display=swap",
+  pharaoh: {
+    name: "pharaoh",
+    label: "Pharaoh's Fortune",
+    description: "Egyptian temple slot machine",
+    font: "'Cinzel', serif",
+    fontUrl: "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap",
     marqueeImage: null,
   },
-  harajuku: {
-    name: "harajuku",
-    label: "Harajuku",
-    description: "Kawaii pastel gachapon",
-    font: "'Nunito', sans-serif",
-    fontUrl: "https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap",
+  "retro-arcade": {
+    name: "retro-arcade",
+    label: "Retro Arcade",
+    description: "80s arcade cabinet — CRT & pixels",
+    font: "'Press Start 2P', monospace",
+    fontUrl: "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
     marqueeImage: null,
   },
-  "pub-quiz": {
-    name: "pub-quiz",
-    label: "Pub Quiz",
+  "fruit-machine": {
+    name: "fruit-machine",
+    label: "Fruit Machine",
     description: "British pub fruit machine",
     font: "'Patrick Hand', cursive",
     fontUrl: "https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap",
