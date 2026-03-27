@@ -17,7 +17,7 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     description: "Chrome & gold casino classic",
     font: "'Press Start 2P', monospace",
     fontUrl: "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
-    marqueeImage: "/machines/arcade-marquee.png",
+    marqueeImage: "/machines/classic-vegas-marquee.png",
   },
   "lucky-dragon": {
     name: "lucky-dragon",
@@ -25,7 +25,7 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     description: "Macau casino — red, gold & jade",
     font: "'Orbitron', sans-serif",
     fontUrl: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap",
-    marqueeImage: null,
+    marqueeImage: "/machines/lucky-dragon-marquee.png",
   },
   pharaoh: {
     name: "pharaoh",
@@ -33,7 +33,7 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     description: "Egyptian temple slot machine",
     font: "'Cinzel', serif",
     fontUrl: "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap",
-    marqueeImage: null,
+    marqueeImage: "/machines/pharaoh-marquee.png",
   },
   "retro-arcade": {
     name: "retro-arcade",
@@ -41,7 +41,7 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     description: "80s arcade cabinet — CRT & pixels",
     font: "'Press Start 2P', monospace",
     fontUrl: "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
-    marqueeImage: null,
+    marqueeImage: "/machines/retro-arcade-marquee.png",
   },
   "fruit-machine": {
     name: "fruit-machine",
@@ -49,7 +49,7 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     description: "British pub fruit machine",
     font: "'Patrick Hand', cursive",
     fontUrl: "https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap",
-    marqueeImage: null,
+    marqueeImage: "/machines/fruit-machine-marquee.png",
   },
 };
 

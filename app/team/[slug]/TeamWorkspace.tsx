@@ -10,7 +10,7 @@ import SidePanel from "@/components/SidePanel";
 import MemberPool from "@/components/MemberPool";
 import OrderList from "@/components/OrderList";
 import OOOToggle from "@/components/OOOToggle";
-import type { SkinName } from "@/lib/skins";
+import { type SkinName, SKINS, SKIN_NAMES } from "@/lib/skins";
 import Link from "next/link";
 
 interface TeamWorkspaceProps {
@@ -321,6 +321,11 @@ export default function TeamWorkspace({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSkinChange = async (newSkin: SkinName) => {
+    setTeam((prev) => ({ ...prev, skin: newSkin }));
+    await supabase.from("teams").update({ skin: newSkin }).eq("id", team.id);
+  };
+
   const status = session?.status as "idle" | "spinning" | "winner" || "idle";
 
   return (
@@ -330,10 +335,35 @@ export default function TeamWorkspace({
       <main className="min-h-screen p-4 sm:p-6">
         {/* Header */}
         <div className="max-w-[900px] mx-auto flex items-center justify-between mb-4">
-          <div>
+          <div className="flex items-center gap-3">
             <p className="text-xs text-skin-text-secondary uppercase tracking-wider">
               STANDUP SLOTS
             </p>
+            {/* Compact skin switcher */}
+            <div className="flex gap-1">
+              {SKIN_NAMES.map((s) => {
+                const isActive = s === (team.skin as SkinName);
+                return (
+                  <button
+                    key={s}
+                    onClick={() => handleSkinChange(s)}
+                    title={SKINS[s].label}
+                    className={`w-6 h-6 rounded-full border-2 transition-all text-[8px] flex items-center justify-center ${
+                      isActive
+                        ? "border-skin-accent scale-110"
+                        : "border-skin-border opacity-50 hover:opacity-100"
+                    }`}
+                    style={{
+                      background: s === "classic-vegas" ? "#ffd700"
+                        : s === "lucky-dragon" ? "#cc0000"
+                        : s === "pharaoh" ? "#1a1a4a"
+                        : s === "retro-arcade" ? "#33ff33"
+                        : "#4a3520",
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
           <div className="flex gap-2">
             <button
