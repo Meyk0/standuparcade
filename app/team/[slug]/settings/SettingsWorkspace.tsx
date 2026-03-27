@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { subscribeToMembers } from "@/lib/realtime";
 import { Team, Member } from "@/lib/types";
@@ -25,7 +24,6 @@ export default function SettingsWorkspace({
   const [skin, setSkin] = useState<SkinName>(initialTeam.skin as SkinName);
 
   const supabase = createClient();
-  const router = useRouter();
 
   const fetchMembers = useCallback(async () => {
     const { data } = await supabase
