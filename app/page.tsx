@@ -144,7 +144,7 @@ export default function Home() {
             <h1 className="text-4xl sm:text-6xl font-bold text-white drop-shadow-lg" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: "0 0 30px rgba(255,215,0,0.4)" }}>
               <span className="text-yellow-400">STANDUP</span>
               <br />
-              <span className="text-pink-400">SLOTS</span>
+              <span className="text-pink-400">ARCADE</span>
             </h1>
             <p className="text-white/70 text-sm sm:text-base">
               Stop deciding who goes next. Let the machine pick.

@@ -12,6 +12,7 @@ import OrderList from "@/components/OrderList";
 import OOOToggle from "@/components/OOOToggle";
 import { type SkinName, SKINS, SKIN_NAMES } from "@/lib/skins";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface TeamWorkspaceProps {
   initialTeam: Team;
@@ -396,19 +397,9 @@ export default function TeamWorkspace({
           </div>
         )}
 
-        {/* No members state */}
+        {/* No members → redirect to settings */}
         {activeMembers.length === 0 ? (
-          <div className="text-center py-16 space-y-4">
-            <p className="text-skin-text-secondary text-sm">
-              No team members yet.
-            </p>
-            <Link
-              href={`/team/${team.slug}/settings`}
-              className="inline-block px-6 py-3 bg-skin-button-bg text-skin-button-text rounded-lg hover:bg-skin-button-hover transition-colors font-bold"
-            >
-              ADD MEMBERS
-            </Link>
-          </div>
+          <RedirectToSettings slug={team.slug} />
         ) : (
           /* Main layout: machine + side panel */
           <div className="max-w-[900px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 items-start">
@@ -481,5 +472,17 @@ export default function TeamWorkspace({
         )}
       </main>
     </>
+  );
+}
+
+function RedirectToSettings({ slug }: { slug: string }) {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(`/team/${slug}/settings`);
+  }, [router, slug]);
+  return (
+    <div className="text-center py-16">
+      <p className="text-skin-text-secondary text-sm">Redirecting to settings...</p>
+    </div>
   );
 }
