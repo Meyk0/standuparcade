@@ -48,7 +48,7 @@ export default function SettingsWorkspace({
   };
 
   const cardClass = "bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl";
-  const goBack = () => { router.push(`/team/${team.slug}`); router.refresh(); };
+  const goBack = () => { window.location.href = `/team/${team.slug}`; };
 
   return (
     <>

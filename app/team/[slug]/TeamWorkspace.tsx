@@ -30,6 +30,7 @@ export default function TeamWorkspace({
   const [session, setSession] = useState<SessionState | null>(initialSession);
   const [showBanner, setShowBanner] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [membersLoaded, setMembersLoaded] = useState(false);
 
   const supabase = createClient();
 
@@ -93,6 +94,7 @@ export default function TeamWorkspace({
         .eq("is_active", true)
         .order("created_at", { ascending: true });
       if (freshMembers) setMembers(freshMembers);
+      setMembersLoaded(true);
 
       const today = new Date().toISOString().split("T")[0];
       const available = (freshMembers || []).filter(
@@ -397,9 +399,13 @@ export default function TeamWorkspace({
           </div>
         )}
 
-        {/* No members → redirect to settings */}
-        {activeMembers.length === 0 ? (
+        {/* No members → redirect to settings (only after client fetch confirms) */}
+        {membersLoaded && activeMembers.length === 0 ? (
           <RedirectToSettings slug={team.slug} />
+        ) : !membersLoaded && activeMembers.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-skin-text-secondary text-sm">Loading...</p>
+          </div>
         ) : (
           /* Main layout: machine + side panel */
           <div className="max-w-[900px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 items-start">
