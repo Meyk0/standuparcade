@@ -10,7 +10,7 @@ interface SkinPickerProps {
 }
 
 const SKIN_PREVIEW_COLORS: Record<SkinName, { bg: string; accent: string; text: string }> = {
-  "classic-vegas": { bg: "#0a0808", accent: "#ffd700", text: "#e8d8b0" },
+  "classic-vegas": { bg: "#1a1510", accent: "#ffd700", text: "#e8d8b0" },
   "lucky-dragon": { bg: "#1a0505", accent: "#ff2222", text: "#ffd700" },
   pharaoh: { bg: "#0a0a18", accent: "#ffd700", text: "#e8d8a0" },
   "retro-arcade": { bg: "#0a0a0a", accent: "#33ff33", text: "#33ff33" },
@@ -31,7 +31,7 @@ export default function SkinPicker({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold text-skin-accent uppercase tracking-wider">
+      <h2 className="text-sm font-bold text-yellow-400 uppercase tracking-widest">
         Machine Type
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -44,37 +44,25 @@ export default function SkinPicker({
             <button
               key={skinName}
               onClick={() => handleSelect(skinName)}
-              className={`p-4 rounded-lg border-2 transition-all text-left ${
+              className={`p-4 rounded-xl border-2 transition-all text-left ${
                 isActive
-                  ? "border-skin-accent shadow-lg"
-                  : "border-skin-border hover:border-skin-text-secondary"
+                  ? "border-yellow-500 shadow-lg shadow-yellow-500/10"
+                  : "border-white/10 hover:border-white/30"
               }`}
               style={{ backgroundColor: colors.bg }}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <div
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: colors.accent }}
-                />
-                <span
-                  className="font-bold text-sm"
-                  style={{ color: colors.text }}
-                >
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors.accent }} />
+                <span className="font-bold text-xs" style={{ color: colors.text }}>
                   {skin.label}
                 </span>
                 {isActive && (
-                  <span
-                    className="text-xs ml-auto"
-                    style={{ color: colors.accent }}
-                  >
+                  <span className="text-[9px] ml-auto" style={{ color: colors.accent }}>
                     ACTIVE
                   </span>
                 )}
               </div>
-              <p
-                className="text-xs opacity-70"
-                style={{ color: colors.text }}
-              >
+              <p className="text-[10px] opacity-60" style={{ color: colors.text }}>
                 {skin.description}
               </p>
             </button>

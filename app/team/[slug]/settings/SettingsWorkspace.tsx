@@ -9,6 +9,7 @@ import { SkinName } from "@/lib/skins";
 import SkinProvider from "@/components/SkinProvider";
 import RosterManager from "@/components/RosterManager";
 import SkinPicker from "@/components/SkinPicker";
+import CasinoBackground from "@/components/CasinoBackground";
 
 interface SettingsWorkspaceProps {
   initialTeam: Team;
@@ -36,12 +37,9 @@ export default function SettingsWorkspace({
     if (data) setMembers(data);
   }, [supabase, team.id]);
 
-  // Subscribe to member changes from other clients
   useEffect(() => {
     const channel = subscribeToMembers(supabase, team.id, fetchMembers);
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [supabase, team.id, fetchMembers]);
 
   const handleSkinChange = (newSkin: SkinName) => {
@@ -49,61 +47,63 @@ export default function SettingsWorkspace({
     setTeam((prev) => ({ ...prev, skin: newSkin }));
   };
 
+  const cardClass = "bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl";
+  const goBack = () => { router.push(`/team/${team.slug}`); router.refresh(); };
+
   return (
     <>
       <SkinProvider skin={skin} />
+      <CasinoBackground>
+        <main className="min-h-screen p-4 sm:p-8">
+          <div className="max-w-2xl mx-auto space-y-6">
 
-      <main className="min-h-screen p-4 sm:p-8 max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold text-skin-accent">
-              {team.name}
-            </h1>
-            <p className="text-xs text-skin-text-secondary">SETTINGS</p>
-          </div>
-          <button
-            onClick={() => {
-              router.push(`/team/${team.slug}`);
-              router.refresh();
-            }}
-            className="px-4 py-2 text-sm border border-skin-border rounded hover:bg-skin-muted transition-colors"
-          >
-            ← BACK
-          </button>
-        </div>
-
-        <div className="space-y-10">
-          {/* Skin picker */}
-          <SkinPicker
-            teamId={team.id}
-            currentSkin={skin}
-            onSkinChange={handleSkinChange}
-          />
-
-          {/* Roster manager */}
-          <RosterManager
-            teamId={team.id}
-            members={members}
-            onMembersChange={fetchMembers}
-          />
-
-          {/* Start standup CTA */}
-          {members.length > 0 && (
-            <div className="pt-6 border-t border-skin-border">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-lg sm:text-xl font-bold text-yellow-400" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+                  {team.name}
+                </h1>
+                <p className="text-xs text-white/50 uppercase tracking-wider mt-1">Settings</p>
+              </div>
               <button
-                onClick={() => {
-                  router.push(`/team/${team.slug}`);
-                  router.refresh();
-                }}
-                className="w-full px-6 py-4 text-lg font-bold bg-skin-button-bg text-skin-button-text rounded-lg hover:bg-skin-button-hover transition-colors"
+                onClick={goBack}
+                className="px-4 py-2 text-xs font-bold uppercase rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition-colors"
+              >
+                ← Back
+              </button>
+            </div>
+
+            {/* Machine Type */}
+            <div className={cardClass}>
+              <SkinPicker
+                teamId={team.id}
+                currentSkin={skin}
+                onSkinChange={handleSkinChange}
+              />
+            </div>
+
+            {/* Roster */}
+            <div className={cardClass}>
+              <RosterManager
+                teamId={team.id}
+                members={members}
+                onMembersChange={fetchMembers}
+              />
+            </div>
+
+            {/* Start standup CTA */}
+            {members.length > 0 && (
+              <button
+                onClick={goBack}
+                className="w-full py-4 text-sm font-bold uppercase tracking-wider rounded-xl transition-all bg-gradient-to-b from-yellow-400 to-yellow-600 text-black hover:from-yellow-300 hover:to-yellow-500 shadow-lg shadow-yellow-500/20"
               >
                 START STANDUP →
               </button>
-            </div>
-          )}
-        </div>
-      </main>
+            )}
+
+          </div>
+        </main>
+      </CasinoBackground>
     </>
   );
 }
