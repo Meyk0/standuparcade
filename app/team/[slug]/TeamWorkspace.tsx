@@ -50,7 +50,47 @@ export default function TeamWorkspace({
   const allPicked =
     poolEmpty && (session?.order_picked?.length ?? 0) > 0;
 
-  // Fetch fresh members
+  // Sync spin_pool with current available members mid-session.
+  // Removes OOO'd/deactivated members from pool, adds new members to pool.
+  // Preserves order_picked (already picked members aren't re-added).
+  const syncSpinPool = useCallback(async (freshMembers: Member[]) => {
+    const currentSession = await supabase
+      .from("session_state")
+      .select("*")
+      .eq("team_id", team.id)
+      .single();
+
+    if (!currentSession.data || currentSession.data.status !== "idle") return;
+
+    const sess = currentSession.data;
+    const todayStr = new Date().toISOString().split("T")[0];
+    const available = freshMembers.filter(
+      (m) => m.is_active && m.ooo_date !== todayStr
+    );
+    const availableIds = available.map((m) => m.id);
+    const alreadyPicked = new Set(sess.order_picked || []);
+
+    // New pool = available members who haven't been picked yet
+    const newPool = availableIds.filter((id) => !alreadyPicked.has(id));
+
+    // Only update if pool actually changed
+    const currentPool = sess.spin_pool || [];
+    const poolChanged =
+      newPool.length !== currentPool.length ||
+      newPool.some((id) => !currentPool.includes(id)) ||
+      currentPool.some((id: string) => !newPool.includes(id));
+
+    if (poolChanged) {
+      const updated = { ...sess, spin_pool: newPool };
+      setSession(updated as SessionState);
+      await supabase
+        .from("session_state")
+        .update({ spin_pool: newPool, updated_at: new Date().toISOString() })
+        .eq("team_id", team.id);
+    }
+  }, [supabase, team.id]);
+
+  // Fetch fresh members + sync pool
   const fetchMembers = useCallback(async () => {
     const { data } = await supabase
       .from("members")
@@ -58,8 +98,11 @@ export default function TeamWorkspace({
       .eq("team_id", team.id)
       .eq("is_active", true)
       .order("created_at", { ascending: true });
-    if (data) setMembers(data);
-  }, [supabase, team.id]);
+    if (data) {
+      setMembers(data);
+      syncSpinPool(data);
+    }
+  }, [supabase, team.id, syncSpinPool]);
 
   // Fetch fresh session
   const fetchSession = useCallback(async () => {
@@ -465,7 +508,17 @@ export default function TeamWorkspace({
                               .from("members")
                               .update({ ooo_date: ooo ? today : null })
                               .eq("id", memberId);
-                            fetchMembers();
+                            // Fetch fresh members + sync spin pool
+                            const { data } = await supabase
+                              .from("members")
+                              .select("*")
+                              .eq("team_id", team.id)
+                              .eq("is_active", true)
+                              .order("created_at", { ascending: true });
+                            if (data) {
+                              setMembers(data);
+                              syncSpinPool(data);
+                            }
                           }}
                         />
                       ))}
