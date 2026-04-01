@@ -31,8 +31,8 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Orbitron', sans-serif",
     fontUrl: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap",
     marqueeImage: "/machines/lucky-dragon-marquee.png",
-    bgDesktop: null, // Set to "/bg/lucky-dragon-desktop.jpg" when ready
-    bgMobile: null,
+    bgDesktop: "/bg/lucky-dragon-desktop.jpg",
+    bgMobile: "/bg/lucky-dragon-mobile.jpg",
   },
   pharaoh: {
     name: "pharaoh",
@@ -41,8 +41,8 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Cinzel', serif",
     fontUrl: "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap",
     marqueeImage: "/machines/pharaoh-marquee.png",
-    bgDesktop: null,
-    bgMobile: null,
+    bgDesktop: "/bg/pharaoh-desktop.jpg",
+    bgMobile: "/bg/pharaoh-mobile.jpg",
   },
   "retro-arcade": {
     name: "retro-arcade",
@@ -51,8 +51,8 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Press Start 2P', monospace",
     fontUrl: "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
     marqueeImage: "/machines/retro-arcade-marquee.png",
-    bgDesktop: null,
-    bgMobile: null,
+    bgDesktop: "/bg/retro-arcade-desktop.jpg",
+    bgMobile: "/bg/retro-arcade-mobile.jpg",
   },
   "fruit-machine": {
     name: "fruit-machine",
@@ -61,8 +61,8 @@ export const SKINS: Record<SkinName, SkinDefinition> = {
     font: "'Patrick Hand', cursive",
     fontUrl: "https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap",
     marqueeImage: "/machines/fruit-machine-marquee.png",
-    bgDesktop: null,
-    bgMobile: null,
+    bgDesktop: "/bg/fruit-machine-desktop.jpg",
+    bgMobile: "/bg/fruit-machine-mobile.jpg",
   },
 };
 
