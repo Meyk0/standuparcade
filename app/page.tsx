@@ -169,7 +169,7 @@ export default function Home() {
                   type="text"
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="e.g. Connectly Engineering"
+                  placeholder="Your team name"
                   maxLength={80}
                   className={inputClass}
                 />
