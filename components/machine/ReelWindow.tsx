@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import SlotReelColumn, { ROW_HEIGHT, VISIBLE_ROWS } from "./SlotReelColumn";
+import { playReelStop } from "@/lib/sounds";
 
 interface ReelWindowProps {
   names: string[];
@@ -68,6 +69,10 @@ export default function ReelWindow({
         next[reelIndex] = "stopped";
         return next;
       });
+
+      if (typeof window !== "undefined" && localStorage.getItem("standup-slots-sound") === "on") {
+        playReelStop();
+      }
 
       stoppedCountRef.current += 1;
       if (stoppedCountRef.current >= 3 && !hasCalledStoppedRef.current) {

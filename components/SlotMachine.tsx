@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import MachineMarquee from "./machine/MachineMarquee";
 import MachineBody from "./machine/MachineBody";
 import MachineBase from "./machine/MachineBase";
 import ReelWindow from "./machine/ReelWindow";
 import PullHandle from "./machine/PullHandle";
+import Confetti from "./Confetti";
 import { Member } from "@/lib/types";
 import { SKINS, SkinName } from "@/lib/skins";
+import { playPullHandle, playSpinning, playWinnerFanfare } from "@/lib/sounds";
 import Link from "next/link";
 
 interface SlotMachineProps {
@@ -39,30 +41,70 @@ export default function SlotMachine({
   onNewSession,
   onAnimationComplete,
 }: SlotMachineProps) {
-  const [winnerRevealed, setWinnerRevealed] = useState(false);
+  const [winnerRevealed, setWinnerRevealed] = useState(status !== "spinning");
+  const [soundOn, setSoundOn] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const soundRef = useRef(soundOn);
+  soundRef.current = soundOn;
 
   const skin = SKINS[skinName] || SKINS["classic-vegas"];
 
   const names = members.map((m) => m.name.toUpperCase());
   const winnerName = currentWinner?.name.toUpperCase() || "???";
 
+  // Load sound preference from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("standup-slots-sound");
+    if (saved === "on") setSoundOn(true);
+  }, []);
+
+  const toggleSound = useCallback(() => {
+    setSoundOn((prev) => {
+      const next = !prev;
+      localStorage.setItem("standup-slots-sound", next ? "on" : "off");
+      return next;
+    });
+  }, []);
+
   const handleAllReelsStopped = useCallback(() => {
     setWinnerRevealed(true);
+    if (soundRef.current) playWinnerFanfare();
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
     onAnimationComplete();
   }, [onAnimationComplete]);
 
   const handleSpin = useCallback(() => {
     setWinnerRevealed(false);
+    if (soundRef.current) {
+      playPullHandle();
+      setTimeout(() => { if (soundRef.current) playSpinning(); }, 250);
+    }
     onSpin();
   }, [onSpin]);
 
+  // Spacebar to pull the handle
   const isSpinning = status === "spinning";
   const isWinner = status === "winner";
-  // Disabled during spin, winner reveal (auto-confirms after 2s), or all picked
   const handleDisabled = isSpinning || isWinner || poolEmpty;
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== "Space") return;
+      // Don't trigger if user is typing in an input/textarea
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      e.preventDefault();
+      if (!handleDisabled) handleSpin();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleDisabled, handleSpin]);
 
   return (
     <div className="relative flex items-start justify-center">
+      <Confetti active={showConfetti} />
+
       {/* Machine container */}
       <div className="relative w-full max-w-[420px]">
         {/* Marquee — sits above the machine body, full width */}
@@ -87,10 +129,10 @@ export default function SlotMachine({
           {/* Winner area — fixed height */}
           <div className="machine-winner-area" style={{ minHeight: "52px" }}>
             <div className="text-center w-full py-2 px-4">
-              {isWinner && currentWinner && winnerRevealed ? (
+              {!isSpinning && currentWinner && winnerRevealed ? (
                 <>
                   <div
-                    className="text-sm sm:text-base font-bold uppercase tracking-wider animate-winner-flash mb-0.5"
+                    className={`text-sm sm:text-base font-bold uppercase tracking-wider mb-0.5 ${isWinner ? "animate-winner-flash" : ""}`}
                     style={{
                       color: "var(--skin-accent)",
                       textShadow: "0 0 10px var(--skin-accent)",
@@ -127,8 +169,8 @@ export default function SlotMachine({
           />
         </div>
 
-        {/* Home link */}
-        <div className="text-center mt-3">
+        {/* Sound toggle + home link */}
+        <div className="flex items-center justify-between mt-3 px-1">
           <Link
             href="/"
             className="text-[10px] uppercase tracking-wider hover:opacity-80 transition-opacity"
@@ -136,6 +178,22 @@ export default function SlotMachine({
           >
             ← HOME
           </Link>
+          <div className="flex items-center gap-2">
+            <span
+              className="text-[9px] uppercase tracking-wider hidden sm:inline"
+              style={{ color: "var(--skin-text-secondary)" }}
+            >
+              SPACE TO SPIN
+            </span>
+            <button
+              onClick={toggleSound}
+              className="text-base hover:opacity-80 transition-opacity"
+              title={soundOn ? "Mute sounds" : "Unmute sounds"}
+              style={{ color: "var(--skin-text-secondary)" }}
+            >
+              {soundOn ? "🔊" : "🔇"}
+            </button>
+          </div>
         </div>
       </div>
 

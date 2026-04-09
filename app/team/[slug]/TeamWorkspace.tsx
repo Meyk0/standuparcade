@@ -299,21 +299,19 @@ export default function TeamWorkspace({
         status: "idle" as const,
         spin_pool: newPool,
         order_picked: newOrder,
-        current_winner: null,
         updated_at: new Date().toISOString(),
       };
 
       // Update locally first
       setSession(idleSession);
 
-      // Then persist
+      // Then persist (keep current_winner so name stays visible until next spin)
       await supabase
         .from("session_state")
         .update({
           status: "idle",
           spin_pool: newPool,
           order_picked: newOrder,
-          current_winner: null,
           updated_at: idleSession.updated_at,
         })
         .eq("team_id", team.id);
