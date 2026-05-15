@@ -10,6 +10,7 @@ import SidePanel from "@/components/SidePanel";
 import MemberPool from "@/components/MemberPool";
 import OrderList from "@/components/OrderList";
 import OOOToggle from "@/components/OOOToggle";
+import ShareQRCode from "@/components/ShareQRCode";
 import { type SkinName, SKINS, SKIN_NAMES } from "@/lib/skins";
 import SkinBackground from "@/components/SkinBackground";
 import Link from "next/link";
@@ -418,6 +419,7 @@ export default function TeamWorkspace({
             >
               {copied ? "COPIED!" : "COPY LINK"}
             </button>
+            <ShareQRCode teamName={team.name} teamSlug={team.slug} />
             <Link
               href={`/team/${team.slug}/settings`}
               className="px-3 py-1.5 text-xs border border-skin-border rounded hover:bg-skin-muted transition-colors"
