@@ -91,7 +91,7 @@ export default function SlotMachine({
     setWinnerRevealed(true);
     if (soundRef.current) playWinnerFanfare();
     if (currentWinner) {
-      speakWinner(currentWinner.name, voiceSettingsRef.current);
+      void speakWinner(currentWinner.name, voiceSettingsRef.current);
     }
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 3000);
