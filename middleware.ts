@@ -5,6 +5,7 @@ const RATE_LIMITS: Record<string, { limit: number; window: number }> = {
   "/api/teams": { limit: 5, window: 3600 },        // 5 per hour
   "/api/teams/check": { limit: 20, window: 60 },   // 20 per minute
   "/api/session/spin": { limit: 30, window: 60 },   // 30 per minute
+  "/api/announcements/speech": { limit: 20, window: 60 }, // 20 per minute
 };
 
 // In-memory rate limiting (works locally; use Vercel KV in production)

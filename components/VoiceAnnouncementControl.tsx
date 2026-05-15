@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import {
   ANNOUNCEMENT_TEMPLATES,
   AnnouncementTemplate,
+  buildAnnouncement,
   previewVoice,
-  supportsSpeechSynthesis,
+  supportsVoiceAnnouncements,
+  VOICE_INTENSITIES,
   VOICE_STYLES,
   VoiceAnnouncementSettings,
+  VoiceIntensity,
   VoiceStyle,
 } from "@/lib/announcements";
 
@@ -23,12 +26,20 @@ const VOICE_STYLE_ORDER: VoiceStyle[] = [
   "calm-narrator",
 ];
 
+const INTENSITY_ORDER: VoiceIntensity[] = ["clean", "amped", "extreme"];
+
 const TEMPLATE_ORDER: AnnouncementTemplate[] = [
+  "surprise",
   "youre-up",
   "next-player",
   "player-one",
   "jackpot",
   "spotlight",
+  "bonus-round",
+  "high-score",
+  "boss-level",
+  "level-up",
+  "insert-coin",
 ];
 
 export default function VoiceAnnouncementControl({
@@ -36,11 +47,12 @@ export default function VoiceAnnouncementControl({
   onChange,
 }: VoiceAnnouncementControlProps) {
   const [open, setOpen] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(true);
+  const [voiceSupported, setVoiceSupported] = useState(true);
+  const [previewing, setPreviewing] = useState(false);
   const [previewError, setPreviewError] = useState("");
 
   useEffect(() => {
-    setSpeechSupported(supportsSpeechSynthesis());
+    setVoiceSupported(supportsVoiceAnnouncements());
   }, []);
 
   const updateSettings = (next: Partial<VoiceAnnouncementSettings>) => {
@@ -48,13 +60,21 @@ export default function VoiceAnnouncementControl({
     onChange({ ...settings, ...next });
   };
 
-  const handlePreview = () => {
+  const handlePreview = async () => {
     setPreviewError("");
-    const spoken = previewVoice(settings);
+    setPreviewing(true);
+    const spoken = await previewVoice(settings);
+    setPreviewing(false);
+
     if (!spoken) {
       setPreviewError("Voice playback is not supported in this browser.");
     }
   };
+
+  const phrasePreview =
+    settings.template === "surprise"
+      ? `Mixes phrases by winner. Example: ${buildAnnouncement("Alex", settings.template)}`
+      : buildAnnouncement("Alex", settings.template);
 
   return (
     <div className="relative">
@@ -79,7 +99,7 @@ export default function VoiceAnnouncementControl({
 
       {open && (
         <div
-          className="absolute bottom-full right-0 z-[90] mb-2 w-[280px] rounded-lg border border-skin-border bg-skin-bg-secondary p-4 text-left shadow-2xl"
+          className="absolute bottom-full right-0 z-[90] mb-2 w-[300px] rounded-lg border border-skin-border bg-skin-bg-secondary p-4 text-left shadow-2xl"
           role="dialog"
           aria-modal="false"
           aria-labelledby="voice-announcement-title"
@@ -93,7 +113,8 @@ export default function VoiceAnnouncementControl({
                 Voice
               </h2>
               <p className="mt-1 text-[10px] leading-relaxed text-skin-text-secondary">
-                Announce winners from this browser only.
+                Announce winners from this browser only. AI-generated audio is
+                used when OpenAI is configured.
               </p>
             </div>
             <button
@@ -117,11 +138,11 @@ export default function VoiceAnnouncementControl({
                 updateSettings({ enabled: event.target.checked })
               }
               className="h-4 w-4 accent-yellow-400"
-              disabled={!speechSupported}
+              disabled={!voiceSupported}
             />
           </label>
 
-          {!speechSupported && (
+          {!voiceSupported && (
             <p className="mt-2 text-[10px] leading-relaxed text-skin-danger">
               Voice playback is not supported in this browser.
             </p>
@@ -160,6 +181,38 @@ export default function VoiceAnnouncementControl({
           </div>
 
           <div className="mt-4 space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-skin-text-secondary">
+              Intensity
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {INTENSITY_ORDER.map((intensity) => {
+                const isActive = settings.intensity === intensity;
+                const intensityDef = VOICE_INTENSITIES[intensity];
+
+                return (
+                  <button
+                    key={intensity}
+                    type="button"
+                    onClick={() => updateSettings({ intensity })}
+                    className={`rounded border px-2 py-2 text-center transition-colors ${
+                      isActive
+                        ? "border-skin-accent bg-skin-muted text-skin-accent"
+                        : "border-skin-border bg-black/20 text-skin-text-secondary hover:bg-skin-muted"
+                    }`}
+                  >
+                    <span className="block text-[10px] font-bold uppercase tracking-wider">
+                      {intensityDef.label}
+                    </span>
+                    <span className="mt-1 block text-[9px] leading-snug opacity-70">
+                      {intensityDef.description}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2">
             <label
               htmlFor="announcement-template"
               className="block text-[10px] font-bold uppercase tracking-wider text-skin-text-secondary"
@@ -183,20 +236,17 @@ export default function VoiceAnnouncementControl({
               ))}
             </select>
             <p className="text-[10px] leading-relaxed text-skin-text-secondary">
-              {ANNOUNCEMENT_TEMPLATES[settings.template].text.replace(
-                "{name}",
-                "Alex"
-              )}
+              {phrasePreview}
             </p>
           </div>
 
           <button
             type="button"
             onClick={handlePreview}
-            disabled={!speechSupported}
+            disabled={!voiceSupported || previewing}
             className="mt-4 w-full rounded-lg bg-skin-button-bg px-4 py-2 text-xs font-bold uppercase tracking-wider text-skin-button-text transition-colors hover:bg-skin-button-hover disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Test Voice
+            {previewing ? "Testing..." : "Test Voice"}
           </button>
 
           {previewError && (
@@ -209,4 +259,3 @@ export default function VoiceAnnouncementControl({
     </div>
   );
 }
-
