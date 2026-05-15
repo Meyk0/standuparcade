@@ -7,9 +7,17 @@ import MachineBase from "./machine/MachineBase";
 import ReelWindow from "./machine/ReelWindow";
 import PullHandle from "./machine/PullHandle";
 import Confetti from "./Confetti";
+import VoiceAnnouncementControl from "./VoiceAnnouncementControl";
 import { Member } from "@/lib/types";
 import { SKINS, SkinName } from "@/lib/skins";
 import { playPullHandle, playSpinning, playWinnerFanfare } from "@/lib/sounds";
+import {
+  DEFAULT_VOICE_SETTINGS,
+  getStoredVoiceSettings,
+  saveVoiceSettings,
+  speakWinner,
+  VoiceAnnouncementSettings,
+} from "@/lib/announcements";
 import Link from "next/link";
 
 interface SlotMachineProps {
@@ -43,9 +51,13 @@ export default function SlotMachine({
 }: SlotMachineProps) {
   const [winnerRevealed, setWinnerRevealed] = useState(status !== "spinning");
   const [soundOn, setSoundOn] = useState(false);
+  const [voiceSettings, setVoiceSettings] =
+    useState<VoiceAnnouncementSettings>(DEFAULT_VOICE_SETTINGS);
   const [showConfetti, setShowConfetti] = useState(false);
   const soundRef = useRef(soundOn);
+  const voiceSettingsRef = useRef(voiceSettings);
   soundRef.current = soundOn;
+  voiceSettingsRef.current = voiceSettings;
 
   const skin = SKINS[skinName] || SKINS["classic-vegas"];
 
@@ -56,6 +68,7 @@ export default function SlotMachine({
   useEffect(() => {
     const saved = localStorage.getItem("standup-slots-sound");
     if (saved === "on") setSoundOn(true);
+    setVoiceSettings(getStoredVoiceSettings());
   }, []);
 
   const toggleSound = useCallback(() => {
@@ -66,13 +79,24 @@ export default function SlotMachine({
     });
   }, []);
 
+  const handleVoiceSettingsChange = useCallback(
+    (nextSettings: VoiceAnnouncementSettings) => {
+      setVoiceSettings(nextSettings);
+      saveVoiceSettings(nextSettings);
+    },
+    []
+  );
+
   const handleAllReelsStopped = useCallback(() => {
     setWinnerRevealed(true);
     if (soundRef.current) playWinnerFanfare();
+    if (currentWinner) {
+      speakWinner(currentWinner.name, voiceSettingsRef.current);
+    }
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 3000);
     onAnimationComplete();
-  }, [onAnimationComplete]);
+  }, [currentWinner, onAnimationComplete]);
 
   const handleSpin = useCallback(() => {
     setWinnerRevealed(false);
@@ -185,6 +209,10 @@ export default function SlotMachine({
             >
               SPACE TO SPIN
             </span>
+            <VoiceAnnouncementControl
+              settings={voiceSettings}
+              onChange={handleVoiceSettingsChange}
+            />
             <button
               onClick={toggleSound}
               className="text-base hover:opacity-80 transition-opacity"
