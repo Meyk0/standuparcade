@@ -76,7 +76,7 @@ export const VOICE_ANNOUNCEMENT_STORAGE_KEY =
   "standup-slots-voice-announcements";
 
 export const DEFAULT_VOICE_SETTINGS: VoiceAnnouncementSettings = {
-  enabled: false,
+  enabled: true,
   style: "classic-host",
   intensity: "amped",
   template: "surprise",
@@ -240,10 +240,7 @@ export function getStoredVoiceSettings(): VoiceAnnouncementSettings {
       : undefined;
 
     return {
-      enabled:
-        typeof parsed.enabled === "boolean"
-          ? parsed.enabled
-          : DEFAULT_VOICE_SETTINGS.enabled,
+      enabled: DEFAULT_VOICE_SETTINGS.enabled,
       style: isVoiceStyle(parsed.style)
         ? parsed.style
         : DEFAULT_VOICE_SETTINGS.style,

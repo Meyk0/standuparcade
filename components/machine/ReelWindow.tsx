@@ -8,6 +8,7 @@ interface ReelWindowProps {
   names: string[];
   winnerName: string;
   status: "idle" | "spinning" | "winner";
+  soundOn: boolean;
   onAllReelsStopped: () => void;
   fillContainer?: boolean;
 }
@@ -18,6 +19,7 @@ export default function ReelWindow({
   names,
   winnerName,
   status,
+  soundOn,
   onAllReelsStopped,
   fillContainer = false,
 }: ReelWindowProps) {
@@ -70,7 +72,7 @@ export default function ReelWindow({
         return next;
       });
 
-      if (typeof window !== "undefined" && localStorage.getItem("standup-slots-sound") === "on") {
+      if (soundOn) {
         playReelStop();
       }
 
@@ -80,7 +82,7 @@ export default function ReelWindow({
         onAllReelsStopped();
       }
     },
-    [onAllReelsStopped]
+    [onAllReelsStopped, soundOn]
   );
 
   const windowHeight = VISIBLE_ROWS * ROW_HEIGHT;
