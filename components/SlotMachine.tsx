@@ -20,6 +20,8 @@ import {
 } from "@/lib/announcements";
 import Link from "next/link";
 
+const SOUND_STORAGE_KEY = "standup-slots-sound";
+
 interface SlotMachineProps {
   teamName: string;
   skinName: SkinName;
@@ -50,7 +52,7 @@ export default function SlotMachine({
   onAnimationComplete,
 }: SlotMachineProps) {
   const [winnerRevealed, setWinnerRevealed] = useState(status !== "spinning");
-  const [soundOn, setSoundOn] = useState(false);
+  const [soundOn, setSoundOn] = useState(true);
   const [voiceSettings, setVoiceSettings] =
     useState<VoiceAnnouncementSettings>(DEFAULT_VOICE_SETTINGS);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -66,32 +68,38 @@ export default function SlotMachine({
 
   // Load sound preference from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("standup-slots-sound");
-    if (saved === "on") setSoundOn(true);
+    const saved = localStorage.getItem(SOUND_STORAGE_KEY);
+    setSoundOn(saved !== "off");
     setVoiceSettings(getStoredVoiceSettings());
   }, []);
 
   const toggleSound = useCallback(() => {
     setSoundOn((prev) => {
       const next = !prev;
-      localStorage.setItem("standup-slots-sound", next ? "on" : "off");
+      localStorage.setItem(SOUND_STORAGE_KEY, next ? "on" : "off");
       return next;
     });
   }, []);
 
   const handleVoiceSettingsChange = useCallback(
     (nextSettings: VoiceAnnouncementSettings) => {
-      setVoiceSettings(nextSettings);
-      saveVoiceSettings(nextSettings);
+      const soundCoupledSettings = { ...nextSettings, enabled: true };
+      setVoiceSettings(soundCoupledSettings);
+      saveVoiceSettings(soundCoupledSettings);
     },
     []
   );
 
   const handleAllReelsStopped = useCallback(() => {
     setWinnerRevealed(true);
-    if (soundRef.current) playWinnerFanfare();
-    if (currentWinner) {
-      void speakWinner(currentWinner.name, voiceSettingsRef.current);
+    if (soundRef.current) {
+      playWinnerFanfare();
+      if (currentWinner) {
+        void speakWinner(currentWinner.name, {
+          ...voiceSettingsRef.current,
+          enabled: true,
+        });
+      }
     }
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 3000);
@@ -146,6 +154,7 @@ export default function SlotMachine({
               names={names.length > 0 ? names : ["???"]}
               winnerName={winnerName}
               status={status}
+              soundOn={soundOn}
               onAllReelsStopped={handleAllReelsStopped}
             />
           </MachineBody>
@@ -209,18 +218,24 @@ export default function SlotMachine({
             >
               SPACE TO SPIN
             </span>
+            <button
+              type="button"
+              onClick={toggleSound}
+              aria-pressed={soundOn}
+              className={`rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                soundOn
+                  ? "border-skin-accent text-skin-accent"
+                  : "border-skin-border text-skin-text-secondary hover:bg-skin-muted"
+              }`}
+              title={soundOn ? "Turn sound off" : "Turn sound on"}
+            >
+              Sound {soundOn ? "On" : "Off"}
+            </button>
             <VoiceAnnouncementControl
               settings={voiceSettings}
               onChange={handleVoiceSettingsChange}
+              audioEnabled={soundOn}
             />
-            <button
-              onClick={toggleSound}
-              className="text-base hover:opacity-80 transition-opacity"
-              title={soundOn ? "Mute sounds" : "Unmute sounds"}
-              style={{ color: "var(--skin-text-secondary)" }}
-            >
-              {soundOn ? "🔊" : "🔇"}
-            </button>
           </div>
         </div>
       </div>

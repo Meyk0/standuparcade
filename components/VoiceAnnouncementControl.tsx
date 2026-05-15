@@ -16,6 +16,7 @@ import {
 
 interface VoiceAnnouncementControlProps {
   settings: VoiceAnnouncementSettings;
+  audioEnabled: boolean;
   onChange: (settings: VoiceAnnouncementSettings) => void;
 }
 
@@ -44,6 +45,7 @@ const TEMPLATE_ORDER: AnnouncementTemplate[] = [
 
 export default function VoiceAnnouncementControl({
   settings,
+  audioEnabled,
   onChange,
 }: VoiceAnnouncementControlProps) {
   const [open, setOpen] = useState(false);
@@ -57,11 +59,16 @@ export default function VoiceAnnouncementControl({
 
   const updateSettings = (next: Partial<VoiceAnnouncementSettings>) => {
     setPreviewError("");
-    onChange({ ...settings, ...next });
+    onChange({ ...settings, ...next, enabled: true });
   };
 
   const handlePreview = async () => {
     setPreviewError("");
+    if (!audioEnabled) {
+      setPreviewError("Turn Sound On to preview voice announcements.");
+      return;
+    }
+
     setPreviewing(true);
     const spoken = await previewVoice(settings);
     setPreviewing(false);
@@ -82,19 +89,11 @@ export default function VoiceAnnouncementControl({
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        aria-pressed={settings.enabled}
-        className={`rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-          settings.enabled
-            ? "border-skin-accent text-skin-accent"
-            : "border-skin-border text-skin-text-secondary hover:bg-skin-muted"
-        }`}
-        title={
-          settings.enabled
-            ? "Voice announcements on"
-            : "Voice announcements off"
-        }
+        className="flex h-[26px] w-[26px] items-center justify-center rounded border border-skin-border text-xs font-bold text-skin-text-secondary transition-colors hover:bg-skin-muted hover:text-skin-text"
+        title="Edit voice settings"
+        aria-label="Edit voice settings"
       >
-        Voice {settings.enabled ? "On" : "Off"}
+        &#9998;
       </button>
 
       {open && (
@@ -113,8 +112,8 @@ export default function VoiceAnnouncementControl({
                 Voice
               </h2>
               <p className="mt-1 text-[10px] leading-relaxed text-skin-text-secondary">
-                Announce winners from this browser only. AI-generated audio is
-                used when OpenAI is configured.
+                Winner voice follows the main Sound toggle. AI-generated audio
+                is used when OpenAI is configured.
               </p>
             </div>
             <button
@@ -127,24 +126,16 @@ export default function VoiceAnnouncementControl({
             </button>
           </div>
 
-          <label className="mt-4 flex items-center justify-between gap-3 rounded border border-skin-border bg-black/20 px-3 py-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-skin-text">
-              Announce Winner
-            </span>
-            <input
-              type="checkbox"
-              checked={settings.enabled}
-              onChange={(event) =>
-                updateSettings({ enabled: event.target.checked })
-              }
-              className="h-4 w-4 accent-yellow-400"
-              disabled={!voiceSupported}
-            />
-          </label>
-
           {!voiceSupported && (
-            <p className="mt-2 text-[10px] leading-relaxed text-skin-danger">
+            <p className="mt-4 text-[10px] leading-relaxed text-skin-danger">
               Voice playback is not supported in this browser.
+            </p>
+          )}
+
+          {!audioEnabled && (
+            <p className="mt-4 rounded border border-skin-border bg-black/20 px-3 py-2 text-[10px] leading-relaxed text-skin-text-secondary">
+              Sound is off. Turn Sound On to hear previews and winner
+              announcements.
             </p>
           )}
 
@@ -243,7 +234,7 @@ export default function VoiceAnnouncementControl({
           <button
             type="button"
             onClick={handlePreview}
-            disabled={!voiceSupported || previewing}
+            disabled={!voiceSupported || !audioEnabled || previewing}
             className="mt-4 w-full rounded-lg bg-skin-button-bg px-4 py-2 text-xs font-bold uppercase tracking-wider text-skin-button-text transition-colors hover:bg-skin-button-hover disabled:cursor-not-allowed disabled:opacity-40"
           >
             {previewing ? "Testing..." : "Test Voice"}
