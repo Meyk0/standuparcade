@@ -1,13 +1,25 @@
 import { createClient } from "@supabase/supabase-js";
+import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import TeamWorkspace from "./TeamWorkspace";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // Server-side data fetching
 async function getTeamData(slug: string) {
+  noStore();
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      global: {
+        fetch: (url, options = {}) =>
+          fetch(url, { ...options, cache: "no-store" }),
+      },
+    }
   );
 
   const { data: team } = await supabase

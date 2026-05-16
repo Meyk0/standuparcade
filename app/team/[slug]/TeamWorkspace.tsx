@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase";
 import { subscribeToSession, subscribeToMembers } from "@/lib/realtime";
 import { Team, Member, SessionState } from "@/lib/types";
@@ -10,6 +10,7 @@ import SidePanel from "@/components/SidePanel";
 import MemberPool from "@/components/MemberPool";
 import OrderList from "@/components/OrderList";
 import OOOToggle from "@/components/OOOToggle";
+import RoundRecap from "@/components/RoundRecap";
 import ShareQRCode from "@/components/ShareQRCode";
 import { type SkinName, SKINS, SKIN_NAMES } from "@/lib/skins";
 import SkinBackground from "@/components/SkinBackground";
@@ -34,9 +35,14 @@ export default function TeamWorkspace({
   const [copied, setCopied] = useState(false);
   const [membersLoaded, setMembersLoaded] = useState(false);
   const searchParams = useSearchParams();
+  const sessionRef = useRef<SessionState | null>(initialSession);
 
   const supabase = createClient();
   const displayMode = searchParams.get("display") === "1";
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -306,15 +312,23 @@ export default function TeamWorkspace({
         .eq("team_id", team.id)
         .single();
 
-      if (!freshSession?.current_winner) return;
+      const localSession = sessionRef.current;
+      const sourceSession = localSession?.current_winner
+        ? localSession
+        : freshSession;
 
-      const newPool = (freshSession.spin_pool || []).filter(
-        (id: string) => id !== freshSession.current_winner
+      if (!sourceSession?.current_winner) return;
+
+      const newPool = (sourceSession.spin_pool || []).filter(
+        (id: string) => id !== sourceSession.current_winner
       );
-      const newOrder = [...(freshSession.order_picked || []), freshSession.current_winner];
+      const newOrder = [
+        ...(sourceSession.order_picked || []),
+        sourceSession.current_winner,
+      ];
 
       const idleSession = {
-        ...freshSession,
+        ...sourceSession,
         status: "idle" as const,
         spin_pool: newPool,
         order_picked: newOrder,
@@ -340,16 +354,19 @@ export default function TeamWorkspace({
   // Reset session
   const handleReset = async () => {
     const pool = availableMembers.map((m) => m.id);
+    const resetData = {
+      status: "idle" as const,
+      spin_pool: pool,
+      order_picked: [],
+      current_winner: null,
+      updated_at: new Date().toISOString(),
+    };
+
+    setSession((prev) => (prev ? { ...prev, ...resetData } : prev));
 
     await supabase
       .from("session_state")
-      .update({
-        status: "idle",
-        spin_pool: pool,
-        order_picked: [],
-        current_winner: null,
-        updated_at: new Date().toISOString(),
-      })
+      .update(resetData)
       .eq("team_id", team.id);
   };
 
@@ -528,24 +545,34 @@ export default function TeamWorkspace({
           >
             {/* Slot Machine */}
             <div className="flex justify-center">
-              <SlotMachine
-                teamName={team.name}
-                skinName={team.skin as SkinName}
-                members={availableMembers}
-                currentWinner={currentWinner}
-                status={poolEmpty && status !== "winner" ? "idle" : status}
-                poolEmpty={poolEmpty}
-                total={availableMembers.length}
-                remaining={effectiveRemaining}
-                onSpin={handleSpin}
-                onReset={handleReset}
-                onNewSession={handleNewSession}
-                onAnimationComplete={handleAnimationComplete}
-                idleMessage={idleMessage}
-                primaryActionLabel={primaryActionLabel}
-                onPrimaryAction={primaryAction}
-                displayMode={displayMode}
-              />
+              <div className="flex w-full flex-col items-center">
+                <SlotMachine
+                  teamName={team.name}
+                  skinName={team.skin as SkinName}
+                  members={availableMembers}
+                  currentWinner={currentWinner}
+                  status={poolEmpty && status !== "winner" ? "idle" : status}
+                  poolEmpty={poolEmpty}
+                  total={availableMembers.length}
+                  remaining={effectiveRemaining}
+                  onSpin={handleSpin}
+                  onReset={handleReset}
+                  onNewSession={handleNewSession}
+                  onAnimationComplete={handleAnimationComplete}
+                  idleMessage={idleMessage}
+                  primaryActionLabel={primaryActionLabel}
+                  onPrimaryAction={primaryAction}
+                  displayMode={displayMode}
+                />
+                {roundComplete && (
+                  <RoundRecap
+                    members={members}
+                    orderIds={orderPicked}
+                    totalEligible={availableMembers.length}
+                    oooCount={oooMembers.length}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Side Panel */}
