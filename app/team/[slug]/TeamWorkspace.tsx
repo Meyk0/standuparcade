@@ -14,7 +14,7 @@ import ShareQRCode from "@/components/ShareQRCode";
 import { type SkinName, SKINS, SKIN_NAMES } from "@/lib/skins";
 import SkinBackground from "@/components/SkinBackground";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface TeamWorkspaceProps {
   initialTeam: Team;
@@ -33,8 +33,10 @@ export default function TeamWorkspace({
   const [showBanner, setShowBanner] = useState(false);
   const [copied, setCopied] = useState(false);
   const [membersLoaded, setMembersLoaded] = useState(false);
+  const searchParams = useSearchParams();
 
   const supabase = createClient();
+  const displayMode = searchParams.get("display") === "1";
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -46,10 +48,24 @@ export default function TeamWorkspace({
     ? members.find((m) => m.id === session.current_winner) || null
     : null;
 
-  const poolEmpty =
-    !session?.spin_pool || session.spin_pool.length === 0;
-  const allPicked =
-    poolEmpty && (session?.order_picked?.length ?? 0) > 0;
+  const sessionPool = session?.spin_pool || [];
+  const orderPicked = session?.order_picked || [];
+  const sessionHasPool = sessionPool.length > 0;
+  const roundNeedsStart =
+    Boolean(session) &&
+    availableMembers.length > 0 &&
+    !sessionHasPool &&
+    orderPicked.length === 0;
+  const roundComplete =
+    Boolean(session) &&
+    availableMembers.length > 0 &&
+    !sessionHasPool &&
+    orderPicked.length > 0;
+  const effectivePoolIds = roundNeedsStart
+    ? availableMembers.map((member) => member.id)
+    : sessionPool;
+  const effectiveRemaining = roundComplete ? 0 : effectivePoolIds.length;
+  const poolEmpty = availableMembers.length === 0 || roundNeedsStart || roundComplete;
 
   // Sync spin_pool with current available members mid-session.
   // Removes OOO'd/deactivated members from pool, adds new members to pool.
@@ -155,11 +171,14 @@ export default function TeamWorkspace({
         .single();
 
       if (sess) {
-        // Reset if stuck in spinning/winner, or if pool is empty but members exist
-        const isStuck = sess.status === "spinning" || sess.status === "winner";
+        // Reset stale in-progress sessions without clearing a valid picked order.
+        const updatedAt = sess.updated_at ? new Date(sess.updated_at).getTime() : 0;
+        const staleSession =
+          updatedAt === 0 || Date.now() - updatedAt > 2 * 60 * 1000;
+        const isInProgress = sess.status === "spinning" || sess.status === "winner";
         const poolDepleted = (!sess.spin_pool || sess.spin_pool.length === 0) && availableIds.length > 0;
 
-        if (isStuck || (poolDepleted && (!sess.order_picked || sess.order_picked.length === 0))) {
+        if (poolDepleted && (!sess.order_picked || sess.order_picked.length === 0)) {
           const resetData = {
             status: "idle" as const,
             current_winner: null,
@@ -172,8 +191,7 @@ export default function TeamWorkspace({
             .update(resetData)
             .eq("team_id", initialTeam.id);
           setSession({ ...sess, ...resetData });
-        } else if (isStuck) {
-          // Stuck but has valid pool/order — just reset status
+        } else if (isInProgress && staleSession) {
           await supabase
             .from("session_state")
             .update({ status: "idle", current_winner: null, updated_at: new Date().toISOString() })
@@ -373,14 +391,46 @@ export default function TeamWorkspace({
   };
 
   const status = session?.status as "idle" | "spinning" | "winner" || "idle";
+  const idleMessage = !membersLoaded && activeMembers.length === 0
+    ? "LOADING"
+    : activeMembers.length > 0 && availableMembers.length === 0
+      ? "EVERYONE OOO"
+      : roundNeedsStart
+        ? "READY TO START"
+        : roundComplete
+          ? "ROUND COMPLETE"
+          : undefined;
+  const primaryActionLabel = roundNeedsStart
+    ? "START ROUND"
+    : roundComplete
+      ? "NEW ROUND"
+      : undefined;
+  const primaryAction = roundNeedsStart
+    ? handleReset
+    : roundComplete
+      ? handleNewSession
+      : undefined;
+  const defaultPanelSections =
+    roundComplete || orderPicked.length > 0
+      ? [0, 1]
+      : effectiveRemaining === 0
+        ? [1, 2]
+        : [1];
 
   return (
     <>
       <SkinProvider skin={team.skin as SkinName} />
       <SkinBackground skinName={team.skin as SkinName} />
 
-      <main className="min-h-screen p-4 sm:p-6">
+      <main
+        className={
+          displayMode
+            ? "min-h-screen p-4 sm:p-6 flex items-center justify-center"
+            : "min-h-screen p-4 sm:p-6"
+        }
+      >
         {/* Header */}
+        {!displayMode && (
         <div className="max-w-[900px] mx-auto flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <p className="text-xs text-skin-text-secondary uppercase tracking-wider">
@@ -421,6 +471,12 @@ export default function TeamWorkspace({
             </button>
             <ShareQRCode teamName={team.name} teamSlug={team.slug} />
             <Link
+              href={`/team/${team.slug}?display=1`}
+              className="px-3 py-1.5 text-xs border border-skin-border rounded hover:bg-skin-muted transition-colors"
+            >
+              DISPLAY
+            </Link>
+            <Link
               href={`/team/${team.slug}/settings`}
               className="px-3 py-1.5 text-xs border border-skin-border rounded hover:bg-skin-muted transition-colors"
             >
@@ -428,9 +484,19 @@ export default function TeamWorkspace({
             </Link>
           </div>
         </div>
+        )}
+
+        {displayMode && (
+          <Link
+            href={`/team/${team.slug}`}
+            className="fixed right-4 top-4 z-[80] px-3 py-1.5 text-xs border border-skin-border rounded bg-skin-bg-secondary/80 text-skin-text-secondary hover:bg-skin-muted transition-colors"
+          >
+            EXIT DISPLAY
+          </Link>
+        )}
 
         {/* Share banner */}
-        {showBanner && (
+        {showBanner && !displayMode && (
           <div className="max-w-[900px] mx-auto mb-4 p-3 border border-skin-accent rounded-lg bg-skin-bg-secondary flex items-center justify-between">
             <span className="text-xs text-skin-accent">
               Share this link with your team to get started!
@@ -453,7 +519,13 @@ export default function TeamWorkspace({
           </div>
         ) : (
           /* Main layout: machine + side panel */
-          <div className="max-w-[900px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 items-start">
+          <div
+            className={
+              displayMode
+                ? "w-full max-w-[900px] flex justify-center"
+                : "max-w-[900px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 items-start"
+            }
+          >
             {/* Slot Machine */}
             <div className="flex justify-center">
               <SlotMachine
@@ -461,19 +533,25 @@ export default function TeamWorkspace({
                 skinName={team.skin as SkinName}
                 members={availableMembers}
                 currentWinner={currentWinner}
-                status={allPicked && status !== "winner" ? "idle" : status}
-                poolEmpty={allPicked}
+                status={poolEmpty && status !== "winner" ? "idle" : status}
+                poolEmpty={poolEmpty}
                 total={availableMembers.length}
-                remaining={session?.spin_pool?.length ?? availableMembers.length}
+                remaining={effectiveRemaining}
                 onSpin={handleSpin}
                 onReset={handleReset}
                 onNewSession={handleNewSession}
                 onAnimationComplete={handleAnimationComplete}
+                idleMessage={idleMessage}
+                primaryActionLabel={primaryActionLabel}
+                onPrimaryAction={primaryAction}
+                displayMode={displayMode}
               />
             </div>
 
             {/* Side Panel */}
+            {!displayMode && (
             <SidePanel
+              defaultOpenSections={defaultPanelSections}
               sections={[
                 {
                   title: `Order (${session?.order_picked?.length || 0})`,
@@ -485,11 +563,11 @@ export default function TeamWorkspace({
                   ),
                 },
                 {
-                  title: `Remaining (${session?.spin_pool?.length || 0})`,
+                  title: `Remaining (${effectiveRemaining})`,
                   content: (
                     <MemberPool
                       members={members}
-                      poolIds={session?.spin_pool || []}
+                      poolIds={effectivePoolIds}
                       oooMembers={oooMembers}
                     />
                   ),
@@ -529,6 +607,7 @@ export default function TeamWorkspace({
             >
               {null}
             </SidePanel>
+            )}
           </div>
         )}
       </main>

@@ -6,6 +6,12 @@ export type VoiceStyle =
 
 export type VoiceIntensity = "clean" | "amped" | "extreme";
 
+export type AnnouncerPack =
+  | "classic-game-show"
+  | "retro-cabinet"
+  | "arena-hype"
+  | "calm-facilitator";
+
 export type FixedAnnouncementTemplate =
   | "youre-up"
   | "next-player"
@@ -37,6 +43,15 @@ interface VoiceStyleDefinition {
 interface VoiceIntensityDefinition {
   label: string;
   description: string;
+}
+
+interface AnnouncerPackDefinition {
+  label: string;
+  description: string;
+  settings: Pick<
+    VoiceAnnouncementSettings,
+    "style" | "intensity" | "template"
+  >;
 }
 
 interface AnnouncementTemplateDefinition {
@@ -126,6 +141,56 @@ export const VOICE_INTENSITIES: Record<
     description: "Maximum",
   },
 };
+
+export const ANNOUNCER_PACKS: Record<AnnouncerPack, AnnouncerPackDefinition> = {
+  "classic-game-show": {
+    label: "Game Show",
+    description: "Bright host, polished pacing",
+    settings: {
+      style: "classic-host",
+      intensity: "amped",
+      template: "surprise",
+    },
+  },
+  "retro-cabinet": {
+    label: "Arcade Cabinet",
+    description: "Robot voice, heavy effects",
+    settings: {
+      style: "arcade-robot",
+      intensity: "extreme",
+      template: "surprise",
+    },
+  },
+  "arena-hype": {
+    label: "Arena Hype",
+    description: "Big reveal, high energy",
+    settings: {
+      style: "hype-announcer",
+      intensity: "extreme",
+      template: "jackpot",
+    },
+  },
+  "calm-facilitator": {
+    label: "Facilitator",
+    description: "Warm and meeting-friendly",
+    settings: {
+      style: "calm-narrator",
+      intensity: "clean",
+      template: "next-player",
+    },
+  },
+};
+
+export function applyAnnouncerPack(
+  settings: VoiceAnnouncementSettings,
+  pack: AnnouncerPack
+): VoiceAnnouncementSettings {
+  return {
+    ...settings,
+    ...ANNOUNCER_PACKS[pack].settings,
+    enabled: true,
+  };
+}
 
 export const ANNOUNCEMENT_TEMPLATES: Record<
   AnnouncementTemplate,

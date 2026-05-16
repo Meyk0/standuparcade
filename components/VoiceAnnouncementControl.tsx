@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import {
+  ANNOUNCER_PACKS,
   ANNOUNCEMENT_TEMPLATES,
+  AnnouncerPack,
   AnnouncementTemplate,
   buildAnnouncement,
   previewVoice,
@@ -28,6 +30,13 @@ const VOICE_STYLE_ORDER: VoiceStyle[] = [
 ];
 
 const INTENSITY_ORDER: VoiceIntensity[] = ["clean", "amped", "extreme"];
+
+const ANNOUNCER_PACK_ORDER: AnnouncerPack[] = [
+  "classic-game-show",
+  "retro-cabinet",
+  "arena-hype",
+  "calm-facilitator",
+];
 
 const TEMPLATE_ORDER: AnnouncementTemplate[] = [
   "surprise",
@@ -138,6 +147,41 @@ export default function VoiceAnnouncementControl({
               announcements.
             </p>
           )}
+
+          <div className="mt-4 space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-skin-text-secondary">
+              Announcer Pack
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {ANNOUNCER_PACK_ORDER.map((pack) => {
+                const packDef = ANNOUNCER_PACKS[pack];
+                const isActive =
+                  settings.style === packDef.settings.style &&
+                  settings.intensity === packDef.settings.intensity &&
+                  settings.template === packDef.settings.template;
+
+                return (
+                  <button
+                    key={pack}
+                    type="button"
+                    onClick={() => updateSettings(packDef.settings)}
+                    className={`rounded border px-2 py-2 text-left transition-colors ${
+                      isActive
+                        ? "border-skin-accent bg-skin-muted text-skin-accent"
+                        : "border-skin-border bg-black/20 text-skin-text-secondary hover:bg-skin-muted"
+                    }`}
+                  >
+                    <span className="block text-[10px] font-bold uppercase tracking-wider">
+                      {packDef.label}
+                    </span>
+                    <span className="mt-1 block text-[9px] leading-snug opacity-70">
+                      {packDef.description}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="mt-4 space-y-2">
             <p className="text-[10px] font-bold uppercase tracking-wider text-skin-text-secondary">

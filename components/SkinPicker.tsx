@@ -44,27 +44,39 @@ export default function SkinPicker({
             <button
               key={skinName}
               onClick={() => handleSelect(skinName)}
-              className={`p-4 rounded-xl border-2 transition-all text-left ${
+              className={`overflow-hidden rounded-xl border-2 transition-all text-left ${
                 isActive
                   ? "border-yellow-500 shadow-lg shadow-yellow-500/10"
                   : "border-white/10 hover:border-white/30"
               }`}
               style={{ backgroundColor: colors.bg }}
             >
-              <div className="flex items-center gap-3 mb-1">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors.accent }} />
-                <span className="font-bold text-xs" style={{ color: colors.text }}>
-                  {skin.label}
-                </span>
-                {isActive && (
-                  <span className="text-[9px] ml-auto" style={{ color: colors.accent }}>
-                    ACTIVE
+              {skin.marqueeImage && (
+                <div className="h-16 border-b border-white/10 bg-black/30">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={skin.marqueeImage}
+                    alt=""
+                    className="h-full w-full object-cover opacity-90"
+                  />
+                </div>
+              )}
+              <div className="p-4">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors.accent }} />
+                  <span className="font-bold text-xs" style={{ color: colors.text }}>
+                    {skin.label}
                   </span>
-                )}
+                  {isActive && (
+                    <span className="text-[9px] ml-auto" style={{ color: colors.accent }}>
+                      ACTIVE
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] opacity-60" style={{ color: colors.text }}>
+                  {skin.description}
+                </p>
               </div>
-              <p className="text-[10px] opacity-60" style={{ color: colors.text }}>
-                {skin.description}
-              </p>
             </button>
           );
         })}

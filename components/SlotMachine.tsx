@@ -35,6 +35,10 @@ interface SlotMachineProps {
   onReset: () => void;
   onNewSession: () => void;
   onAnimationComplete: () => void;
+  idleMessage?: string;
+  primaryActionLabel?: string;
+  onPrimaryAction?: () => void;
+  displayMode?: boolean;
 }
 
 export default function SlotMachine({
@@ -50,6 +54,10 @@ export default function SlotMachine({
   onReset,
   onNewSession,
   onAnimationComplete,
+  idleMessage,
+  primaryActionLabel,
+  onPrimaryAction,
+  displayMode = false,
 }: SlotMachineProps) {
   const [winnerRevealed, setWinnerRevealed] = useState(status !== "spinning");
   const [soundOn, setSoundOn] = useState(true);
@@ -138,7 +146,9 @@ export default function SlotMachine({
       <Confetti active={showConfetti} />
 
       {/* Machine container */}
-      <div className="relative w-full max-w-[420px]">
+      <div
+        className={`relative w-full ${displayMode ? "max-w-[520px]" : "max-w-[420px]"}`}
+      >
         {/* Marquee — sits above the machine body, full width */}
         <MachineMarquee
           teamName={teamName}
@@ -187,7 +197,7 @@ export default function SlotMachine({
                   className="text-[10px] uppercase tracking-[0.15em]"
                   style={{ color: "var(--machine-label-color)" }}
                 >
-                  {isSpinning ? "" : poolEmpty ? "ALL PICKED" : "\u00A0"}
+                  {isSpinning ? "" : idleMessage || (poolEmpty ? "ALL PICKED" : "\u00A0")}
                 </span>
               )}
             </div>
@@ -197,6 +207,9 @@ export default function SlotMachine({
           <MachineBase
             status={poolEmpty && status !== "winner" ? "idle" : status}
             poolEmpty={poolEmpty}
+            statusLabel={idleMessage}
+            primaryActionLabel={primaryActionLabel}
+            onPrimaryAction={onPrimaryAction}
             onReset={onReset}
             onNewSession={onNewSession}
           />

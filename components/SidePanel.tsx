@@ -1,14 +1,25 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import { useEffect, useState, ReactNode } from "react";
 
 interface SidePanelProps {
   children: ReactNode;
   sections: { title: string; content: ReactNode }[];
+  defaultOpenSections?: number[];
 }
 
-export default function SidePanel({ sections }: SidePanelProps) {
-  const [openSections, setOpenSections] = useState<Set<number>>(new Set([0]));
+export default function SidePanel({
+  sections,
+  defaultOpenSections = [0],
+}: SidePanelProps) {
+  const defaultOpenKey = defaultOpenSections.join(",");
+  const [openSections, setOpenSections] = useState<Set<number>>(
+    new Set(defaultOpenSections)
+  );
+
+  useEffect(() => {
+    setOpenSections(new Set(defaultOpenSections));
+  }, [defaultOpenKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleSection = (index: number) => {
     setOpenSections((prev) => {

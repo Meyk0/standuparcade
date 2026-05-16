@@ -3,6 +3,9 @@
 interface MachineBaseProps {
   status: "idle" | "spinning" | "winner";
   poolEmpty: boolean;
+  statusLabel?: string;
+  primaryActionLabel?: string;
+  onPrimaryAction?: () => void;
   onReset: () => void;
   onNewSession: () => void;
 }
@@ -10,9 +13,16 @@ interface MachineBaseProps {
 export default function MachineBase({
   status,
   poolEmpty,
+  statusLabel,
+  primaryActionLabel,
+  onPrimaryAction,
   onReset,
   onNewSession,
 }: MachineBaseProps) {
+  const actionLabel =
+    primaryActionLabel || (poolEmpty && status === "idle" ? "NEW SESSION" : "");
+  const actionHandler = onPrimaryAction || onNewSession;
+
   return (
     <div className="machine-base relative rounded-b-2xl px-4 sm:px-6 py-4">
       {/* Payout tray */}
@@ -28,11 +38,11 @@ export default function MachineBase({
 
       {/* Action area */}
       <div className="flex justify-center gap-3">
-        {poolEmpty && status === "idle" ? (
+        {actionLabel && status === "idle" ? (
           <MachineButton
-            label="NEW SESSION"
+            label={actionLabel}
             variant="primary"
-            onClick={onNewSession}
+            onClick={actionHandler}
           />
         ) : (
           <div className="text-center py-2 flex items-center gap-3">
@@ -40,11 +50,12 @@ export default function MachineBase({
               className="text-[10px] uppercase tracking-[0.2em]"
               style={{ color: "var(--machine-label-color)" }}
             >
-              {status === "spinning"
-                ? "★ SPINNING ★"
-                : status === "winner"
-                  ? "★ WINNER ★"
-                  : "PULL TO SPIN"}
+              {statusLabel ||
+                (status === "spinning"
+                  ? "★ SPINNING ★"
+                  : status === "winner"
+                    ? "★ WINNER ★"
+                    : "PULL TO SPIN")}
             </span>
             {status === "idle" && !poolEmpty && (
               <button
