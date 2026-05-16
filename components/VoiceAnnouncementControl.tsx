@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import {
+  ANNOUNCER_PACK_ORDER,
   ANNOUNCER_PACKS,
   ANNOUNCEMENT_TEMPLATES,
-  AnnouncerPack,
   AnnouncementTemplate,
+  applyAnnouncerPack,
   buildAnnouncement,
   previewVoice,
   supportsVoiceAnnouncements,
@@ -30,13 +31,6 @@ const VOICE_STYLE_ORDER: VoiceStyle[] = [
 ];
 
 const INTENSITY_ORDER: VoiceIntensity[] = ["clean", "amped", "extreme"];
-
-const ANNOUNCER_PACK_ORDER: AnnouncerPack[] = [
-  "classic-game-show",
-  "retro-cabinet",
-  "arena-hype",
-  "calm-facilitator",
-];
 
 const TEMPLATE_ORDER: AnnouncementTemplate[] = [
   "surprise",
@@ -164,7 +158,7 @@ export default function VoiceAnnouncementControl({
                   <button
                     key={pack}
                     type="button"
-                    onClick={() => updateSettings(packDef.settings)}
+                    onClick={() => onChange(applyAnnouncerPack(settings, pack))}
                     className={`rounded border px-2 py-2 text-left transition-colors ${
                       isActive
                         ? "border-skin-accent bg-skin-muted text-skin-accent"

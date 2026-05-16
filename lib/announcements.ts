@@ -10,7 +10,8 @@ export type AnnouncerPack =
   | "classic-game-show"
   | "retro-cabinet"
   | "arena-hype"
-  | "calm-facilitator";
+  | "calm-facilitator"
+  | "boss-fight";
 
 export type FixedAnnouncementTemplate =
   | "youre-up"
@@ -179,7 +180,24 @@ export const ANNOUNCER_PACKS: Record<AnnouncerPack, AnnouncerPackDefinition> = {
       template: "next-player",
     },
   },
+  "boss-fight": {
+    label: "Boss Fight",
+    description: "Dramatic final-round reveal",
+    settings: {
+      style: "arcade-robot",
+      intensity: "extreme",
+      template: "boss-level",
+    },
+  },
 };
+
+export const ANNOUNCER_PACK_ORDER: AnnouncerPack[] = [
+  "classic-game-show",
+  "retro-cabinet",
+  "boss-fight",
+  "arena-hype",
+  "calm-facilitator",
+];
 
 export function applyAnnouncerPack(
   settings: VoiceAnnouncementSettings,
@@ -256,6 +274,7 @@ const SURPRISE_TEMPLATE_POOL: FixedAnnouncementTemplate[] = [
 ];
 
 let activeAudio: HTMLAudioElement | null = null;
+let activeAudioUrl = "";
 let activeSource: AudioBufferSourceNode | null = null;
 let activeContext: AudioContext | null = null;
 let activeCleanup: (() => void) | null = null;
@@ -303,6 +322,9 @@ export function getStoredVoiceSettings(): VoiceAnnouncementSettings {
     const storedIntensity = isVoiceIntensity(parsed.intensity)
       ? parsed.intensity
       : undefined;
+    const storedTemplate = isAnnouncementTemplate(parsed.template)
+      ? parsed.template
+      : undefined;
 
     return {
       enabled: DEFAULT_VOICE_SETTINGS.enabled,
@@ -310,9 +332,7 @@ export function getStoredVoiceSettings(): VoiceAnnouncementSettings {
         ? parsed.style
         : DEFAULT_VOICE_SETTINGS.style,
       intensity: storedIntensity ?? DEFAULT_VOICE_SETTINGS.intensity,
-      template: storedIntensity && isAnnouncementTemplate(parsed.template)
-        ? parsed.template
-        : DEFAULT_VOICE_SETTINGS.template,
+      template: storedTemplate ?? DEFAULT_VOICE_SETTINGS.template,
     };
   } catch {
     return DEFAULT_VOICE_SETTINGS;
@@ -377,6 +397,10 @@ function stopCurrentAnnouncement() {
     activeAudio.pause();
     activeAudio.src = "";
     activeAudio = null;
+  }
+  if (activeAudioUrl) {
+    URL.revokeObjectURL(activeAudioUrl);
+    activeAudioUrl = "";
   }
 
   if (activeSource) {
@@ -747,6 +771,7 @@ async function playHtmlAudio(audioBlob: Blob): Promise<boolean> {
       () => {
         URL.revokeObjectURL(audioUrl);
         if (activeAudio === audio) activeAudio = null;
+        if (activeAudioUrl === audioUrl) activeAudioUrl = "";
       },
       { once: true }
     );
@@ -756,15 +781,18 @@ async function playHtmlAudio(audioBlob: Blob): Promise<boolean> {
       () => {
         URL.revokeObjectURL(audioUrl);
         if (activeAudio === audio) activeAudio = null;
+        if (activeAudioUrl === audioUrl) activeAudioUrl = "";
       },
       { once: true }
     );
 
     activeAudio = audio;
+    activeAudioUrl = audioUrl;
     await audio.play();
     return true;
   } catch {
     if (audioUrl) URL.revokeObjectURL(audioUrl);
+    if (activeAudioUrl === audioUrl) activeAudioUrl = "";
     return false;
   }
 }
