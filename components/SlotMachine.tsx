@@ -10,7 +10,6 @@ import Confetti from "./Confetti";
 import VoiceAnnouncementControl from "./VoiceAnnouncementControl";
 import { Member } from "@/lib/types";
 import { SKINS, SkinName } from "@/lib/skins";
-import { playPullHandle, playSpinning, playWinnerFanfare } from "@/lib/sounds";
 import {
   DEFAULT_VOICE_SETTINGS,
   getStoredVoiceSettings,
@@ -100,14 +99,11 @@ export default function SlotMachine({
 
   const handleAllReelsStopped = useCallback(() => {
     setWinnerRevealed(true);
-    if (soundRef.current) {
-      playWinnerFanfare();
-      if (currentWinner) {
-        void speakWinner(currentWinner.name, {
-          ...voiceSettingsRef.current,
-          enabled: true,
-        });
-      }
+    if (soundRef.current && currentWinner) {
+      void speakWinner(currentWinner.name, {
+        ...voiceSettingsRef.current,
+        enabled: true,
+      });
     }
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 3000);
@@ -116,10 +112,6 @@ export default function SlotMachine({
 
   const handleSpin = useCallback(() => {
     setWinnerRevealed(false);
-    if (soundRef.current) {
-      playPullHandle();
-      setTimeout(() => { if (soundRef.current) playSpinning(); }, 250);
-    }
     onSpin();
   }, [onSpin]);
 
@@ -164,7 +156,6 @@ export default function SlotMachine({
               names={names.length > 0 ? names : ["???"]}
               winnerName={winnerName}
               status={status}
-              soundOn={soundOn}
               onAllReelsStopped={handleAllReelsStopped}
             />
           </MachineBody>

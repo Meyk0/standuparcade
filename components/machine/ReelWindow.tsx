@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import SlotReelColumn, { ROW_HEIGHT, VISIBLE_ROWS } from "./SlotReelColumn";
-import { playReelStop } from "@/lib/sounds";
 
 interface ReelWindowProps {
   names: string[];
   winnerName: string;
   status: "idle" | "spinning" | "winner";
-  soundOn: boolean;
   onAllReelsStopped: () => void;
   fillContainer?: boolean;
 }
@@ -19,7 +17,6 @@ export default function ReelWindow({
   names,
   winnerName,
   status,
-  soundOn,
   onAllReelsStopped,
   fillContainer = false,
 }: ReelWindowProps) {
@@ -72,17 +69,13 @@ export default function ReelWindow({
         return next;
       });
 
-      if (soundOn) {
-        playReelStop();
-      }
-
       stoppedCountRef.current += 1;
       if (stoppedCountRef.current >= 3 && !hasCalledStoppedRef.current) {
         hasCalledStoppedRef.current = true;
         onAllReelsStopped();
       }
     },
-    [onAllReelsStopped, soundOn]
+    [onAllReelsStopped]
   );
 
   const windowHeight = VISIBLE_ROWS * ROW_HEIGHT;
