@@ -13,6 +13,7 @@ import { SKINS, SkinName } from "@/lib/skins";
 import {
   DEFAULT_VOICE_SETTINGS,
   getStoredVoiceSettings,
+  preloadWinnerSpeech,
   saveVoiceSettings,
   speakWinner,
   VoiceAnnouncementSettings,
@@ -96,6 +97,15 @@ export default function SlotMachine({
     },
     []
   );
+
+  useEffect(() => {
+    if (status !== "spinning" || !soundOn || !currentWinner) return;
+
+    preloadWinnerSpeech(currentWinner.name, {
+      ...voiceSettings,
+      enabled: true,
+    });
+  }, [currentWinner, soundOn, status, voiceSettings]);
 
   const handleAllReelsStopped = useCallback(() => {
     setWinnerRevealed(true);

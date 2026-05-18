@@ -273,11 +273,14 @@ const SURPRISE_TEMPLATE_POOL: FixedAnnouncementTemplate[] = [
   "insert-coin",
 ];
 
+const CLIENT_SPEECH_CACHE_MAX_ENTRIES = 20;
+
 let activeAudio: HTMLAudioElement | null = null;
 let activeAudioUrl = "";
 let activeSource: AudioBufferSourceNode | null = null;
 let activeContext: AudioContext | null = null;
 let activeCleanup: (() => void) | null = null;
+const generatedSpeechCache = new Map<string, Promise<ArrayBuffer | null>>();
 
 function isVoiceStyle(value: unknown): value is VoiceStyle {
   return typeof value === "string" && value in VOICE_STYLES;
@@ -803,6 +806,60 @@ async function playGeneratedSpeech(
 ): Promise<boolean> {
   if (!supportsVoiceAnnouncements()) return false;
 
+  const audioData = await getGeneratedSpeechAudio(name, settings);
+  if (!audioData) return false;
+
+  try {
+    stopCurrentAnnouncement();
+
+    const webAudioPlayed = await playWithWebAudio(audioData, settings);
+    if (webAudioPlayed) return true;
+
+    return playHtmlAudio(new Blob([audioData], { type: "audio/mpeg" }));
+  } catch {
+    return false;
+  }
+}
+
+function getGeneratedSpeechCacheKey(
+  name: string,
+  settings: VoiceAnnouncementSettings
+) {
+  return [
+    name.trim().toLowerCase(),
+    settings.style,
+    settings.intensity,
+    settings.template,
+  ].join(":");
+}
+
+function cacheGeneratedSpeech(
+  key: string,
+  audioPromise: Promise<ArrayBuffer | null>
+) {
+  if (generatedSpeechCache.size >= CLIENT_SPEECH_CACHE_MAX_ENTRIES) {
+    const firstKey = generatedSpeechCache.keys().next().value;
+    if (firstKey) generatedSpeechCache.delete(firstKey);
+  }
+  generatedSpeechCache.set(key, audioPromise);
+}
+
+function cacheGeneratedSpeechRequest(
+  key: string,
+  audioPromise: Promise<ArrayBuffer | null>
+) {
+  cacheGeneratedSpeech(key, audioPromise);
+  void audioPromise.then((audioData) => {
+    if (!audioData && generatedSpeechCache.get(key) === audioPromise) {
+      generatedSpeechCache.delete(key);
+    }
+  });
+}
+
+async function requestGeneratedSpeechAudio(
+  name: string,
+  settings: VoiceAnnouncementSettings
+): Promise<ArrayBuffer | null> {
   try {
     const response = await fetch("/api/announcements/speech", {
       method: "POST",
@@ -815,18 +872,41 @@ async function playGeneratedSpeech(
       }),
     });
 
-    if (!response.ok) return false;
+    if (!response.ok) return null;
 
-    const audioData = await response.arrayBuffer();
-    stopCurrentAnnouncement();
-
-    const webAudioPlayed = await playWithWebAudio(audioData, settings);
-    if (webAudioPlayed) return true;
-
-    return playHtmlAudio(new Blob([audioData], { type: "audio/mpeg" }));
+    return response.arrayBuffer();
   } catch {
-    return false;
+    return null;
   }
+}
+
+async function getGeneratedSpeechAudio(
+  name: string,
+  settings: VoiceAnnouncementSettings
+): Promise<ArrayBuffer | null> {
+  const cacheKey = getGeneratedSpeechCacheKey(name, settings);
+  const cachedAudio = generatedSpeechCache.get(cacheKey);
+
+  if (cachedAudio) {
+    return cachedAudio;
+  }
+
+  const audioPromise = requestGeneratedSpeechAudio(name, settings);
+  cacheGeneratedSpeechRequest(cacheKey, audioPromise);
+  return audioPromise;
+}
+
+export function preloadWinnerSpeech(
+  name: string,
+  settings: VoiceAnnouncementSettings
+) {
+  if (!settings.enabled || !supportsVoiceAnnouncements()) return;
+
+  const cacheKey = getGeneratedSpeechCacheKey(name, settings);
+  if (generatedSpeechCache.has(cacheKey)) return;
+
+  const audioPromise = requestGeneratedSpeechAudio(name, settings);
+  cacheGeneratedSpeechRequest(cacheKey, audioPromise);
 }
 
 export async function speakWinner(
